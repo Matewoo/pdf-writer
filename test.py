@@ -14,7 +14,7 @@ pdf_output = "speiseplan_fertig.pdf"
 
 # Schriftarten registrieren
 pdfmetrics.registerFont(TTFont("FiraSans", "FiraSans-Regular.ttf"))
-pdfmetrics.registerFont(TTFont("FiraSansBold", "FiraSans-Bold.ttf"))
+pdfmetrics.registerFont(TTFont("FiraSansMedium", "FiraSans-Medium.ttf"))
 pdfmetrics.registerFont(TTFont("FiraSansItalic", "FiraSans-Italic.ttf"))
 
 # Farben definieren
@@ -27,14 +27,14 @@ df = pd.read_excel(excel_file).fillna("")
 
 # Positionen für jede Spalte (feste X/Y-Koordinaten)
 positions = {
-    "Date": (82, 589),
+    "Date": (82, 587),
     "Meat main dish": (82, 539),
     "Meat side dish": (82, 524),
-    "Halal": (400, 700),
-    "Meat price": (500, 700),
-    "Veggi Main dish": (500, 700),
-    "Veggi side dish": (700, 700),
-    "Veggi price": (900, 700)
+    "Halal": (186, 566),
+    "Meat price": (82, 500),
+    "Veggi main dish": (82, 451),
+    "Veggi side dish": (82, 436),
+    "Veggi price": (82, 408)
 }
 
 # PDF erstellen
@@ -50,15 +50,39 @@ for _, row in df.iterrows():
 
     # Wochentag & Datum fett/rot setzen
     x, y = positions["Date"]
-    c.setFont("FiraSansBold", 14)
+    c.setFont("FiraSansMedium", 14)
     c.setFillColor(dunkelrot)
     c.drawString(x, y, row["Date"])
 
     # Fleischgericht Hauptgericht fett/schwarz
     x, y = positions["Meat main dish"]
-    c.setFont("FiraSansBold", 12)
+    c.setFont("FiraSansMedium", 12)
     c.setFillColor(schwarz)
     c.drawString(x, y, row["Meat main dish"])
+
+    # Fleischgericht Hauptgericht fett/schwarz
+    x, y = positions["Veggi main dish"]
+    c.setFont("FiraSansMedium", 12)
+    c.setFillColor(schwarz)
+    c.drawString(x, y, row["Veggi main dish"])
+
+    # Fleischgericht Preis kursiv/schwarz
+    x, y = positions["Meat price"]
+    c.setFont("FiraSansItalic", 10)
+    c.setFillColor(schwarz)
+    c.drawString(x, y, row["Meat price"])
+
+    # Veggi Preis kursiv/schwarz
+    x, y = positions["Veggi price"]
+    c.setFont("FiraSansItalic", 10)
+    c.setFillColor(schwarz)
+    c.drawString(x, y, row["Veggi price"])
+
+    if row["Halal"] == "x" or row["Halal"] == "X":
+        x, y = positions["Halal"]
+        c.setFont("FiraSansMedium", 13)
+        c.setFillColor(hellgruen)
+        c.drawString(x, y, '„HALAL“')
 
 
     # Restliche Spalten in normaler Schrift
@@ -66,7 +90,7 @@ for _, row in df.iterrows():
     c.setFillColor(schwarz)  # Falls du eine zweite Farbe brauchst
 
     for spalte in positions.keys():
-        if spalte != "Date" and spalte != "Meat main dish":  # Alle anderen Werte normal schreiben
+        if spalte == "Meat side dish" or spalte == "Veggi side dish":  # Alle anderen Werte normal schreiben
             x, y = positions[spalte]
             c.drawString(x, y, str(row[spalte]))
 
