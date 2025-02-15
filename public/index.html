@@ -420,6 +420,33 @@
                 });
         }
 
+        function generatePDF() {
+            const weekNumber = getWeekNumber(currentWeek);
+            const year = currentWeek.getFullYear();
+            const week = `KW${weekNumber}-${year}`;
+
+            fetch('/generate-pdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ week })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('PDF erfolgreich generiert');
+                    } else {
+                        alert('Fehler beim Generieren der PDF');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error generating PDF:', error);
+                    alert('Fehler beim Generieren der PDF');
+                });
+        }
+
+
         // Initialize the display when page loads
         updateWeekDisplay();
         updateDayDisplay();

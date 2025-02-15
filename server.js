@@ -86,6 +86,25 @@ app.get('/load-week', (req, res) => {
     }
 });
 
+const { exec } = require('child_process');
+
+app.post('/generate-pdf', (req, res) => {
+    const { week } = req.body;
+
+    exec(`python.exe ./writePdf.py ${week}`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error generating PDF: ${error.message}`);
+            return res.status(500).json({ success: false, error: 'Fehler beim Generieren der PDF' });
+        }
+        if (stderr) {
+            console.error(`Error generating PDF: ${stderr}`);
+            return res.status(500).json({ success: false, error: 'Fehler beim Generieren der PDF' });
+        }
+        console.log(`PDF generated: ${stdout}`);
+        res.json({ success: true });
+    });
+});
+
 server.listen(4000, () => {
     console.log('Server is listening on port 4000');
 });
