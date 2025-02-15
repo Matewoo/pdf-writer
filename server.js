@@ -26,7 +26,7 @@ db.exec(`
         date_title TEXT,
         meat_main TEXT,
         meat_side TEXT,
-        halal INTEGER,
+        halal BOOLEAN,
         meat_price TEXT,
         veggi_main TEXT,
         veggi_side TEXT,

@@ -78,7 +78,7 @@
         .input-field-14 {
             position: absolute;
             background: transparent;
-            border: 1px solid rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 0, 0, 0.07);
             padding: 2px 4px;
             font-size: 24px;
             color: rgb(159, 28, 12);
@@ -90,16 +90,18 @@
         .input-field-13 {
             position: absolute;
             background: transparent;
-            border: 1px solid rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 0, 0, 0.07);
             padding: 2px 4px;
-            font-size: 18px;
+            font-size: 23px;
+            color: #00B050;
+            font-weight: 500;
             font-family: 'Fira Sans', sans-serif
         }
 
         .input-field-12 {
             position: absolute;
             background: transparent;
-            border: 1px solid rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 0, 0, 0.07);
             padding: 2px 4px;
             font-size: 20px;
             width: 500px;
@@ -109,7 +111,7 @@
         .input-field-12-b {
             position: absolute;
             background: transparent;
-            border: 1px solid rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 0, 0, 0.07);
             padding: 2px 4px;
             font-size: 20px;
             font-weight: bold;
@@ -120,7 +122,7 @@
         .input-field-10 {
             position: absolute;
             background: transparent;
-            border: 1px solid rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 0, 0, 0.07);
             padding: 2px 4px;
             font-size: 16px;
             font-style: italic;
@@ -166,7 +168,10 @@
                                 document.write(`
                                     <div id="dayForm${i}" class="day-form ${i === 0 ? 'active' : ''}">
                                         <input type="text" class="input-field-14" name="dateTitle${i}" style="bottom: 67%; left: 13.4%" placeholder="Datum">
-                                        <input type="checkbox" class="input-field-13" name="halal${i}" style="bottom: 62.2%; left: 22.1%">
+                                        <select class="input-field-13" name="halal${i}" style="bottom: 61%; left: 30%">
+                                            <option value="" style="color:red;">----</option>
+                                            <option value="halal" style="color:#00B050;">„HALAL“</option>
+                                        </select>
                                         <input type="text" class="input-field-12-b" name="meatMain${i}" style="bottom: 55%; left: 13.4%" placeholder="Fleischgericht">
                                         <input type="text" class="input-field-12" name="meatSide${i}" style="bottom: 50.2%; left: 13.4%" placeholder="Beilage">
                                         <input type="text" class="input-field-10" name="meatPrice${i}" style="bottom: 43.3%; left: 13.4%" placeholder="Preis">
@@ -296,7 +301,7 @@
                     dateTitle: document.querySelector(`input[name="dateTitle${i}"]`).value,
                     meatMain: document.querySelector(`input[name="meatMain${i}"]`).value,
                     meatSide: document.querySelector(`input[name="meatSide${i}"]`).value,
-                    halal: document.querySelector(`input[name="halal${i}"]`).checked,
+                    halal: document.querySelector(`select[name="halal${i}"]`).value === 'halal',
                     meatPrice: document.querySelector(`input[name="meatPrice${i}"]`).value,
                     veggiMain: document.querySelector(`input[name="veggiMain${i}"]`).value,
                     veggiSide: document.querySelector(`input[name="veggiSide${i}"]`).value,
@@ -332,7 +337,7 @@
                         document.querySelector(`input[name="dateTitle${i}"]`).value = '';
                         document.querySelector(`input[name="meatMain${i}"]`).value = '';
                         document.querySelector(`input[name="meatSide${i}"]`).value = '';
-                        document.querySelector(`input[name="halal${i}"]`).checked = false;
+                        document.querySelector(`select[name="halal${i}"]`).value = '';
                         document.querySelector(`input[name="meatPrice${i}"]`).value = '';
                         document.querySelector(`input[name="veggiMain${i}"]`).value = '';
                         document.querySelector(`input[name="veggiSide${i}"]`).value = '';
@@ -346,11 +351,12 @@
                         const dateTitleInput = document.querySelector(`input[name="dateTitle${dayIndex}"]`);
                         const meatPriceInput = document.querySelector(`input[name="meatPrice${dayIndex}"]`);
                         const veggiPriceInput = document.querySelector(`input[name="veggiPrice${dayIndex}"]`);
+                        const halalSelect = document.querySelector(`select[name="halal${dayIndex}"]`);
 
                         dateTitleInput.value = entry.date_title;
                         document.querySelector(`input[name="meatMain${dayIndex}"]`).value = entry.meat_main;
                         document.querySelector(`input[name="meatSide${dayIndex}"]`).value = entry.meat_side;
-                        document.querySelector(`input[name="halal${dayIndex}"]`).checked = entry.halal === 1;
+                        halalSelect.value = entry.halal ? 'halal' : '';
                         meatPriceInput.value = entry.meat_price;
                         document.querySelector(`input[name="veggiMain${dayIndex}"]`).value = entry.veggi_main;
                         document.querySelector(`input[name="veggiSide${dayIndex}"]`).value = entry.veggi_side;
@@ -385,6 +391,7 @@
                             const dateTitleInput = document.querySelector(`input[name="dateTitle${i}"]`);
                             const meatPriceInput = document.querySelector(`input[name="meatPrice${i}"]`);
                             const veggiPriceInput = document.querySelector(`input[name="veggiPrice${i}"]`);
+                            const halalSelect = document.querySelector(`select[name="halal${i}"]`);
 
                             if (!dateTitleInput.value) {
                                 const currentDate = new Date(currentWeek);
