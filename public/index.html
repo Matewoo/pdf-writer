@@ -400,21 +400,49 @@
                     data.forEach(entry => {
                         const dayIndex = entry.day_index;
                         const dateTitleInput = document.querySelector(`input[name="dateTitle${dayIndex}"]`);
-                        dateTitleInput.value = entry.date_title;
+                        const meatPriceInput = document.querySelector(`input[name="meatPrice${dayIndex}"]`);
+                        const veggiPriceInput = document.querySelector(`input[name="veggiPrice${dayIndex}"]`);
 
+                        dateTitleInput.value = entry.date_title;
                         document.querySelector(`input[name="meatMain${dayIndex}"]`).value = entry.meat_main;
                         document.querySelector(`input[name="meatSide${dayIndex}"]`).value = entry.meat_side;
                         document.querySelector(`input[name="halal${dayIndex}"]`).checked = entry.halal === 1;
-                        document.querySelector(`input[name="meatPrice${dayIndex}"]`).value = entry.meat_price;
+                        meatPriceInput.value = entry.meat_price;
                         document.querySelector(`input[name="veggiMain${dayIndex}"]`).value = entry.veggi_main;
                         document.querySelector(`input[name="veggiSide${dayIndex}"]`).value = entry.veggi_side;
-                        document.querySelector(`input[name="veggiPrice${dayIndex}"]`).value = entry.veggi_price;
+                        veggiPriceInput.value = entry.veggi_price;
+
+                        // Automatically fill dateTitle if empty
+                        if (!dateTitleInput.value) {
+                            const currentDate = new Date(currentWeek);
+                            currentDate.setDate(currentDate.getDate() + dayIndex);
+                            const dayName = currentDate.toLocaleDateString('de-DE', { weekday: 'long' }).toUpperCase();
+                            const dateStr = currentDate.toLocaleDateString('de-DE', {
+                                day: '2-digit',
+                                month: 'long',
+                                year: 'numeric'
+                            }).toUpperCase();
+                            dateTitleInput.value = `${dayName}, ${dateStr}`;
+                        }
+
+                        // Automatically fill meatPrice if empty
+                        if (!meatPriceInput.value) {
+                            meatPriceInput.value = (dayIndex === 4) ? "9,50 € / 6,80 € - Business Lunch 7,50 € / 5,10 €" : "9,00 € / 6,30 € - Business Lunch 7,00 € / 4,90 €";
+                        }
+
+                        // Automatically fill veggiPrice if empty
+                        if (!veggiPriceInput.value) {
+                            veggiPriceInput.value = "8,50 € / 5,95 € - Business Lunch 6,50 € / 4,55 €";
+                        }
                     });
 
-                    // Automatically fill dateTitle if empty or not in DB
+                    // Automatically fill dateTitle, meatPrice, and veggiPrice if not in DB
                     for (let i = 0; i < 5; i++) {
                         if (!loadedDays.has(i)) {
                             const dateTitleInput = document.querySelector(`input[name="dateTitle${i}"]`);
+                            const meatPriceInput = document.querySelector(`input[name="meatPrice${i}"]`);
+                            const veggiPriceInput = document.querySelector(`input[name="veggiPrice${i}"]`);
+
                             if (!dateTitleInput.value) {
                                 const currentDate = new Date(currentWeek);
                                 currentDate.setDate(currentDate.getDate() + i);
@@ -423,8 +451,16 @@
                                     day: '2-digit',
                                     month: 'long',
                                     year: 'numeric'
-                                });
+                                }).toUpperCase();
                                 dateTitleInput.value = `${dayName}, ${dateStr}`;
+                            }
+
+                            if (!meatPriceInput.value) {
+                                meatPriceInput.value = (i === 4) ? "9,50 € / 6,80 € - Business Lunch 7,50 € / 5,10 €" : "9,00 € / 6,30 € - Business Lunch 7,00 € / 4,90 €";
+                            }
+
+                            if (!veggiPriceInput.value) {
+                                veggiPriceInput.value = "8,50 € / 5,95 € - Business Lunch 6,50 € / 4,55 €";
                             }
                         }
                     }
