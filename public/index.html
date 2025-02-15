@@ -83,6 +83,7 @@
             font-size: 20px;
             color: rgb(159, 28, 12);
             font-weight: bold;
+            width: 400px;
         }
 
         .input-field-13 {
@@ -395,9 +396,12 @@
                     }
 
                     // Fill input fields with loaded data
+                    const loadedDays = new Set(data.map(entry => entry.day_index));
                     data.forEach(entry => {
                         const dayIndex = entry.day_index;
-                        document.querySelector(`input[name="dateTitle${dayIndex}"]`).value = entry.date_title;
+                        const dateTitleInput = document.querySelector(`input[name="dateTitle${dayIndex}"]`);
+                        dateTitleInput.value = entry.date_title;
+
                         document.querySelector(`input[name="meatMain${dayIndex}"]`).value = entry.meat_main;
                         document.querySelector(`input[name="meatSide${dayIndex}"]`).value = entry.meat_side;
                         document.querySelector(`input[name="halal${dayIndex}"]`).checked = entry.halal === 1;
@@ -406,6 +410,24 @@
                         document.querySelector(`input[name="veggiSide${dayIndex}"]`).value = entry.veggi_side;
                         document.querySelector(`input[name="veggiPrice${dayIndex}"]`).value = entry.veggi_price;
                     });
+
+                    // Automatically fill dateTitle if empty or not in DB
+                    for (let i = 0; i < 5; i++) {
+                        if (!loadedDays.has(i)) {
+                            const dateTitleInput = document.querySelector(`input[name="dateTitle${i}"]`);
+                            if (!dateTitleInput.value) {
+                                const currentDate = new Date(currentWeek);
+                                currentDate.setDate(currentDate.getDate() + i);
+                                const dayName = currentDate.toLocaleDateString('de-DE', { weekday: 'long' }).toUpperCase();
+                                const dateStr = currentDate.toLocaleDateString('de-DE', {
+                                    day: '2-digit',
+                                    month: 'long',
+                                    year: 'numeric'
+                                });
+                                dateTitleInput.value = `${dayName}, ${dateStr}`;
+                            }
+                        }
+                    }
                 })
                 .catch(error => {
                     console.error('Error loading week:', error);
