@@ -21,7 +21,7 @@ const db = new Database('menu.db');
 db.exec(`
     CREATE TABLE IF NOT EXISTS menu_entries (
         date TEXT PRIMARY KEY,
-        week_number INTEGER,
+        week TEXT,
         day_index INTEGER,
         date_title TEXT,
         meat_main TEXT,
@@ -40,10 +40,10 @@ app.get('/', (req, res) => {
 });
 
 app.post('/save-week', (req, res) => {
-    const { weekNumber, entries } = req.body;
+    const { week, entries } = req.body;
 
     const insert = db.prepare(`
-        INSERT OR REPLACE INTO menu_entries (date, week_number, day_index, date_title, meat_main, meat_side, halal, meat_price, veggi_main, veggi_side, veggi_price)
+        INSERT OR REPLACE INTO menu_entries (date, week, day_index, date_title, meat_main, meat_side, halal, meat_price, veggi_main, veggi_side, veggi_price)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
@@ -51,7 +51,7 @@ app.post('/save-week', (req, res) => {
         for (const entry of entries) {
             insert.run(
                 entry.date,
-                weekNumber,
+                week,
                 entry.dayIndex,
                 entry.dateTitle,
                 entry.meatMain,
@@ -71,6 +71,18 @@ app.post('/save-week', (req, res) => {
     } catch (error) {
         console.error('Error saving week:', error);
         res.status(500).json({ error: 'Fehler beim Speichern der Woche' });
+    }
+});
+
+app.get('/load-week', (req, res) => {
+    const { week } = req.query;
+
+    try {
+        const entries = db.prepare('SELECT * FROM menu_entries WHERE week = ?').all(week);
+        res.json(entries);
+    } catch (error) {
+        console.error('Error loading week:', error);
+        res.status(500).json({ error: 'Fehler beim Laden der Woche' });
     }
 });
 
