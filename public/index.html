@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Speiseplan Generator</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+            font-family: 'Fira Sans', sans-serif;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .week-controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .week-controls button {
+            padding: 8px 16px;
+            margin: 0 10px;
+            font-size: 16px;
+        }
+
+        #currentWeek {
+            display: inline-block;
+            min-width: 250px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .day-controls {
+            text-align: center;
+            margin: 10px 0 20px 0;
+        }
+
+        .day-controls button {
+            padding: 6px 12px;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+
+        #currentDay {
+            display: inline-block;
+            min-width: 150px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .template-container {
+            position: relative;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .template-page {
+            position: relative;
+            height: 0;
+            padding-bottom: 60%;
+            background: url('/assets/speiseplan_vorlage_Seite_1.png') no-repeat center;
+            background-size: contain;
+        }
+
+        .form-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .input-field-14 {
+            position: absolute;
+            background: transparent;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            padding: 2px 4px;
+            font-size: 20px;
+            color: rgb(159, 28, 12);
+            font-weight: bold;
+        }
+
+        .input-field-13 {
+            position: absolute;
+            background: transparent;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            padding: 2px 4px;
+            font-size: 18px;
+        }
+
+        .input-field-12 {
+            position: absolute;
+            background: transparent;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            padding: 2px 4px;
+            font-size: 14px;
+        }
+
+        .input-field-10 {
+            position: absolute;
+            background: transparent;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            padding: 2px 4px;
+            font-size: 14px;
+        }
+
+        .bottom-controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="week-controls">
+            <button onclick="previousWeek()">&lt; Vorherige Woche</button>
+            <span id="currentWeek"></span>
+            <button onclick="nextWeek()">Nächste Woche &gt;</button>
+        </div>
+
+        <div class="day-controls">
+            <button onclick="previousDay()">&lt; Vorheriger Tag</button>
+            <span id="currentDay"></span>
+            <button onclick="nextDay()">Nächster Tag &gt;</button>
+        </div>
+
+        <div class="template-container">
+            <div class="template-page">
+                <div class="form-overlay">
+                    <form id="menuForm">
+                        <input type="text" class="input-field-14" name="date" style="bottom: 68%; left: 13.4%"
+                            placeholder="Datum">
+                        <input type="checkbox" class="input-field-13" name="halal" style="bottom: 62.2%; left: 22.1%">
+                        <input type="text" class="input-field-12" name="meatMain" style="bottom: 55%; left: 14%"
+                            placeholder="Fleischgericht">
+                        <input type="text" class="input-field-12" name="meatSide" style="bottom: 50.2%; left: 14%"
+                            placeholder="Beilage">
+                        <input type="text" class="input-field-10" name="meatPrice" style="bottom: 40.4%; left: 14%"
+                            placeholder="Preis">
+                        <input type="text" class="input-field-12" name="veggiMain" style="bottom: 25.6%; left: 14%"
+                            placeholder="Veggie">
+                        <input type="text" class="input-field-12" name="veggiSide" style="bottom: 20.8%; left: 14%"
+                            placeholder="Beilage">
+                        <input type="text" class="input-field-10" name="veggiPrice" style="bottom: 15.5%; left: 14%"
+                            placeholder="Preis">
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-controls">
+            <button onclick="savePage()">Seite speichern</button>
+            <button onclick="generatePDF()">PDF generieren</button>
+        </div>
+    </div>
+
+    <script>
+        let currentWeek = new Date();
+        currentWeek.setDate(currentWeek.getDate() - currentWeek.getDay() + 1); // Set to Monday
+        let currentDayIndex = 0; // 0 = Monday, 4 = Friday
+
+        function getWeekNumber(date) {
+            const target = new Date(date.valueOf());
+            const dayNumber = (date.getDay() + 6) % 7;
+            target.setDate(target.getDate() - dayNumber + 3);
+            const firstThursday = target.valueOf();
+            target.setMonth(0, 1);
+            if (target.getDay() !== 4) {
+                target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+            }
+            return 1 + Math.ceil((firstThursday - target) / 604800000);
+        }
+
+        function updateWeekDisplay() {
+            const startOfWeek = new Date(currentWeek);
+            const endOfWeek = new Date(currentWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 4); // Friday
+
+            const weekNumber = getWeekNumber(startOfWeek);
+
+            const startDate = startOfWeek.toLocaleDateString('de-DE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: '2-digit'
+            });
+            const endDate = endOfWeek.toLocaleDateString('de-DE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: '2-digit'
+            });
+
+            document.getElementById('currentWeek').textContent =
+                `KW${weekNumber} ${startDate} - ${endDate}`;
+        }
+
+        function updateDayDisplay() {
+            const currentDate = new Date(currentWeek);
+            currentDate.setDate(currentDate.getDate() + currentDayIndex);
+            const dayName = currentDate.toLocaleDateString('de-DE', { weekday: 'long' });
+            const dateStr = currentDate.toLocaleDateString('de-DE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: '2-digit'
+            });
+            document.getElementById('currentDay').textContent = `${dayName} ${dateStr}`;
+        }
+
+        function previousDay() {
+            if (currentDayIndex > 0) {
+                currentDayIndex--;
+                updateDayDisplay();
+            }
+        }
+
+        function nextDay() {
+            if (currentDayIndex < 4) {
+                currentDayIndex++;
+                updateDayDisplay();
+            }
+        }
+
+        function previousWeek() {
+            currentWeek.setDate(currentWeek.getDate() - 7);
+            currentDayIndex = 0; // Reset to Monday
+            updateWeekDisplay();
+            updateDayDisplay();
+        }
+
+        function nextWeek() {
+            currentWeek.setDate(currentWeek.getDate() + 7);
+            currentDayIndex = 0; // Reset to Monday
+            updateWeekDisplay();
+            updateDayDisplay();
+        }
+
+        // Initialize the display when page loads
+        updateWeekDisplay();
+        updateDayDisplay();
+    </script>
+</body>
+
+</html>
