@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -17,8 +18,11 @@ week = sys.argv[1].replace("-", " ")
 #week = "KW7 2025"  # Hardcoded week value for testing
 print(f"Week parameter: {week}")  # Debugging-Ausgabe
 
+base_dir = os.path.dirname(os.path.abspath(__file__))
+
 # Datenbankverbindung herstellen
-conn = sqlite3.connect('menu.db')
+db_path = os.path.join(base_dir, "../../../pdf-writer-data/menu.db")
+conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
 # Daten aus der Datenbank laden
@@ -33,14 +37,14 @@ df = df.fillna("")
 #print(df.head())  # Ausgabe der ersten Zeilen des DataFrames
 
 # Dateien einlesen
-pdf_template = "speiseplan_vorlage.pdf"
-pdf_temp = "temp_speiseplan.pdf"
-pdf_output = "speiseplan_fertig.pdf"
+pdf_template = os.path.join(base_dir, "../../data/speiseplan_vorlage.pdf")
+pdf_temp = os.path.join(base_dir, "../../data/temp_speiseplan.pdf")
+pdf_output = os.path.join(base_dir, "../../data/speiseplan_fertig.pdf")
 
 # Schriftarten registrieren
-pdfmetrics.registerFont(TTFont("FiraSans", "FiraSans-Regular.ttf"))
-pdfmetrics.registerFont(TTFont("FiraSansMedium", "FiraSans-Medium.ttf"))
-pdfmetrics.registerFont(TTFont("FiraSansItalic", "FiraSans-Italic.ttf"))
+pdfmetrics.registerFont(TTFont("FiraSans", os.path.join(base_dir, "../../frontend/public/resources/fonts/FiraSans-Regular.ttf")))
+pdfmetrics.registerFont(TTFont("FiraSansMedium", os.path.join(base_dir, "../../frontend/public/resources/fonts/FiraSans-Medium.ttf")))
+pdfmetrics.registerFont(TTFont("FiraSansItalic", os.path.join(base_dir, "../../frontend/public/resources/fonts/FiraSans-Italic.ttf")))
 
 # Farben definieren
 dunkelrot = Color(159/255, 28/255, 12/255)

@@ -241,7 +241,8 @@ function generatePDF() {
             if (data.success) {
                 alert('PDF erfolgreich generiert');
             } else {
-                alert('Fehler beim Generieren der PDF');
+                const errorMessage = data.error || 'Unbekannter Fehler';
+                alert(`Fehler beim Generieren der PDF:\n\n${errorMessage}\n\nBitte kontaktieren Sie Ihren zuständigen Systemadministrator.`);
             }
         })
         .catch(error => {

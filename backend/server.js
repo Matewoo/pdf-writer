@@ -4,18 +4,26 @@ const WebSocket = require('ws');
 const bodyParser = require('body-parser');
 const path = require('path');
 const Database = require('better-sqlite3');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 // Middleware
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, '../frontend/public')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Create data directory if it doesn't exist
+const dataDir = path.resolve(__dirname, '../../pdf-writer-data');
+if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+    console.log(`Created data directory: ${dataDir}`);
+}
+
 // SQLite-Datenbank initialisieren
-const db = new Database('menu.db');
+const db = new Database(path.join(dataDir, 'menu.db'));
 
 // Tabelle erstellen, falls sie nicht existiert
 db.exec(`
@@ -36,7 +44,7 @@ db.exec(`
 
 // Routes
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, '../frontend/public', 'menu.html'));
 });
 
 app.post('/save-week', (req, res) => {
@@ -91,14 +99,14 @@ const { exec } = require('child_process');
 app.post('/generate-pdf', (req, res) => {
     const { week } = req.body;
 
-    exec(`python.exe ./writePdf.py ${week}`, (error, stdout, stderr) => {
+    exec(`python.exe .\\scripts\\writePdf.py ${week}`, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error generating PDF: ${error.message}`);
-            return res.status(500).json({ success: false, error: 'Fehler beim Generieren der PDF' });
+            return res.status(500).json({ success: false, error: error.message });
         }
         if (stderr) {
             console.error(`Error generating PDF: ${stderr}`);
-            return res.status(500).json({ success: false, error: 'Fehler beim Generieren der PDF' });
+            return res.status(500).json({ success: false, error: stderr});
         }
         console.log(`PDF generated: ${stdout}`);
         res.json({ success: true });

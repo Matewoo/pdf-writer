@@ -2,7 +2,7 @@ body {
     margin: 0;
     padding: 20px;
     background: #a81411;
-    background-image: url("/assets/background.png");
+    background-image: url("/resources/img/background.png");
     color: white;
     font-family: 'Fira Sans', sans-serif;
 }
@@ -64,7 +64,7 @@ button {
     position: relative;
     height: 0;
     padding-bottom: 60%;
-    background: url('/assets/speiseplan_vorlage_Seite_1.png') no-repeat center;
+    background: url('/resources/img/speiseplan_vorlage_Seite_1.png') no-repeat center;
     background-size: contain;
 }
 
