@@ -64,7 +64,15 @@ button {
     position: relative;
     height: 0;
     padding-bottom: 60%;
+}
+
+.menu-bg {
     background: url('/resources/img/speiseplan_vorlage_Seite_1.png') no-repeat center;
+    background-size: contain;
+}
+
+.dailyDish-bg {
+    background: url('/resources/img/tagesgericht.png') no-repeat center;
     background-size: contain;
 }
 
@@ -126,6 +134,61 @@ button {
     border: 1px solid rgba(0, 0, 0, 0.07);
     padding: 2px 4px;
     font-size: 16px;
+    font-style: italic;
+    width: 333px;
+    font-family: 'Fira Sans', sans-serif
+}
+
+.input-field-20 {
+    position: absolute;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    padding: 2px 4px;
+    font-size: 32px;
+    color: rgb(159, 28, 12);
+    font-weight: bold;
+    width: 333px;
+    font-family: 'Fira Sans', sans-serif
+}
+
+.input-field-19-b {
+    position: absolute;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    padding: 2px 4px;
+    font-size: 30px;
+    font-weight: bold;
+    width: 500px;
+    font-family: 'Fira Sans', sans-serif
+}
+
+.input-field-19 {
+    position: absolute;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    padding: 2px 4px;
+    font-size: 30px;
+    width: 500px;
+    font-family: 'Fira Sans', sans-serif
+}
+
+.input-field-19-h {
+    position: absolute;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    padding: 2px 4px;
+    font-size: 36px;
+    color: #00B050;
+    font-weight: 500;
+    font-family: 'Fira Sans', sans-serif
+}
+
+.input-field-14-i {
+    position: absolute;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    padding: 2px 4px;
+    font-size: 23px;
     font-style: italic;
     width: 333px;
     font-family: 'Fira Sans', sans-serif

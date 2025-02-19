@@ -99,53 +99,51 @@ function saveWeek() {
         const currentDate = new Date(currentWeek);
         currentDate.setDate(currentDate.getDate() + i);
 
+        // Anpassen der Werte entsprechend der daily_entries Tabelle
+        const halalVeggiValue = document.querySelector(`select[name="halalVeggi${i}"]`).value;
         const entry = {
-            date: currentDate.toISOString().split('T')[0], // Reines Datum
+            date: currentDate.toISOString().split('T')[0],
+            week: week,
             dayIndex: i,
             dateTitle: document.querySelector(`input[name="dateTitle${i}"]`).value,
-            meatMain: document.querySelector(`input[name="meatMain${i}"]`).value,
-            meatSide: document.querySelector(`input[name="meatSide${i}"]`).value,
-            halal: document.querySelector(`select[name="halal${i}"]`).value === 'halal',
-            meatPrice: document.querySelector(`input[name="meatPrice${i}"]`).value,
-            veggiMain: document.querySelector(`input[name="veggiMain${i}"]`).value,
-            veggiSide: document.querySelector(`input[name="veggiSide${i}"]`).value,
-            veggiPrice: document.querySelector(`input[name="veggiPrice${i}"]`).value
+            dailyMain: document.querySelector(`input[name="dailyMain${i}"]`).value,
+            dailySide: document.querySelector(`input[name="dailySide${i}"]`).value,
+            halal: halalVeggiValue === 'halal' ? 1 : 0,
+            veggi: halalVeggiValue === 'veggi' ? 1 : 0,
+            dailyPrice: document.querySelector(`input[name="dailyPrice${i}"]`).value
         };
 
         entries.push(entry);
     }
 
-    fetch('/save-week', {
+    fetch('/save-week-daily', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ week, entries })
     })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-        })
-        .catch(error => {
-            console.error('Error saving week:', error);
-            alert('Fehler beim Speichern der Woche');
-        });
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+    })
+    .catch(error => {
+        console.error('Error saving week:', error);
+        alert('Fehler beim Speichern der Woche');
+    });
 }
 
 function loadWeekData(week) {
-    fetch(`/load-week?week=${encodeURIComponent(week)}`)
+    fetch(`/load-week-daily?week=${encodeURIComponent(week)}`)
         .then(response => response.json())
         .then(data => {
             // Clear all input fields
             for (let i = 0; i < 5; i++) {
                 document.querySelector(`input[name="dateTitle${i}"]`).value = '';
-                document.querySelector(`input[name="meatMain${i}"]`).value = '';
-                document.querySelector(`input[name="meatSide${i}"]`).value = '';
-                document.querySelector(`select[name="halal${i}"]`).value = '';
-                document.querySelector(`input[name="meatPrice${i}"]`).value = '';
-                document.querySelector(`input[name="veggiMain${i}"]`).value = '';
-                document.querySelector(`input[name="veggiSide${i}"]`).value = '';
-                document.querySelector(`input[name="veggiPrice${i}"]`).value = '';
+                document.querySelector(`input[name="dailyMain${i}"]`).value = '';
+                document.querySelector(`input[name="dailySide${i}"]`).value = '';
+                document.querySelector(`select[name="halalVeggi${i}"]`).value = '';
+                document.querySelector(`input[name="dailyPrice${i}"]`).value = '';
             }
 
             // Fill input fields with loaded data
@@ -153,18 +151,20 @@ function loadWeekData(week) {
             data.forEach(entry => {
                 const dayIndex = entry.day_index;
                 const dateTitleInput = document.querySelector(`input[name="dateTitle${dayIndex}"]`);
-                const meatPriceInput = document.querySelector(`input[name="meatPrice${dayIndex}"]`);
-                const veggiPriceInput = document.querySelector(`input[name="veggiPrice${dayIndex}"]`);
-                const halalSelect = document.querySelector(`select[name="halal${dayIndex}"]`);
+                const dailyPriceInput = document.querySelector(`input[name="dailyPrice${dayIndex}"]`);
+                const halalVeggiSelect = document.querySelector(`select[name="halalVeggi${dayIndex}"]`);
 
                 dateTitleInput.value = entry.date_title;
-                document.querySelector(`input[name="meatMain${dayIndex}"]`).value = entry.meat_main;
-                document.querySelector(`input[name="meatSide${dayIndex}"]`).value = entry.meat_side;
-                halalSelect.value = entry.halal ? 'halal' : '';
-                meatPriceInput.value = entry.meat_price;
-                document.querySelector(`input[name="veggiMain${dayIndex}"]`).value = entry.veggi_main;
-                document.querySelector(`input[name="veggiSide${dayIndex}"]`).value = entry.veggi_side;
-                veggiPriceInput.value = entry.veggi_price;
+                document.querySelector(`input[name="dailyMain${dayIndex}"]`).value = entry.daily_main;
+                document.querySelector(`input[name="dailySide${dayIndex}"]`).value = entry.daily_side;
+                dailyPriceInput.value = entry.daily_price;
+                if (entry.halal) {
+                    halalVeggiSelect.value = 'halal';
+                } else if (entry.veggi) {
+                    halalVeggiSelect.value = 'veggi';
+                } else {
+                    halalVeggiSelect.value = '';
+                }
 
                 // Automatically fill dateTitle if empty
                 if (!dateTitleInput.value) {
@@ -178,24 +178,17 @@ function loadWeekData(week) {
                     dateTitleInput.value = `${dayName}, ${dateStr}`;
                 }
 
-                // Automatically fill meatPrice if empty
-                if (!meatPriceInput.value) {
-                    meatPriceInput.value = (dayIndex === 4) ? "9,50 € / 6,80 € - Business Lunch 7,50 € / 5,10 €" : "9,00 € / 6,30 € - Business Lunch 7,00 € / 4,90 €";
-                }
-
-                // Automatically fill veggiPrice if empty
-                if (!veggiPriceInput.value) {
-                    veggiPriceInput.value = "8,50 € / 5,95 € - Business Lunch 6,50 € / 4,55 €";
+                // Automatically fill dailyPrice if empty
+                if (!dailyPriceInput.value) {
+                    dailyPriceInput.value = "6,50 € / 4,80 €";
                 }
             });
 
-            // Automatically fill dateTitle, meatPrice, and veggiPrice if not in DB
+            // Automatically fill dateTitle, dailyPrice if not in DB
             for (let i = 0; i < 5; i++) {
                 if (!loadedDays.has(i)) {
                     const dateTitleInput = document.querySelector(`input[name="dateTitle${i}"]`);
-                    const meatPriceInput = document.querySelector(`input[name="meatPrice${i}"]`);
-                    const veggiPriceInput = document.querySelector(`input[name="veggiPrice${i}"]`);
-                    const halalSelect = document.querySelector(`select[name="halal${i}"]`);
+                    const dailyPriceInput = document.querySelector(`input[name="dailyPrice${i}"]`);
 
                     if (!dateTitleInput.value) {
                         const currentDate = new Date(currentWeek);
@@ -208,19 +201,15 @@ function loadWeekData(week) {
                         dateTitleInput.value = `${dayName}, ${dateStr}`;
                     }
 
-                    if (!meatPriceInput.value) {
-                        meatPriceInput.value = (i === 4) ? "9,50 € / 6,80 € - Business Lunch 7,50 € / 5,10 €" : "9,00 € / 6,30 € - Business Lunch 7,00 € / 4,90 €";
-                    }
-
-                    if (!veggiPriceInput.value) {
-                        veggiPriceInput.value = "8,50 € / 5,95 € - Business Lunch 6,50 € / 4,55 €";
+                    if (!dailyPriceInput.value) {
+                        dailyPriceInput.value = "6,50 € / 4,80 €";
                     }
                 }
             }
         })
         .catch(error => {
             console.error('Error loading week:', error);
-            alert('Fehler beim Laden der Woche!\n\nBitte kontaktieren Sie Ihren zuständigen Systemadministrator.');
+            alert('Fehler beim Laden der Woche.\n\nBitte kontaktieren Sie Ihren zuständigen Systemadministrator.');
         });
 }
 

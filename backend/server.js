@@ -42,9 +42,27 @@ db.exec(`
     )
 `);
 
+db.exec(`
+    CREATE TABLE IF NOT EXISTS daily_entries (
+        date TEXT PRIMARY KEY,
+        week TEXT,
+        day_index INTEGER,
+        date_title TEXT,
+        daily_main TEXT,
+        daily_side TEXT,
+        halal BOOLEAN,
+        veggi BOOLEAN,
+        daily_price TEXT
+    )
+`);
+
 // Routes
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/public', 'menu.html'));
+app.get('/edit/menu', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/public/edit', 'menu.html'));
+});
+
+app.get('/edit/dailyDish', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/public/edit', 'dailyDish.html'));
 });
 
 app.post('/save-week', (req, res) => {
@@ -82,11 +100,56 @@ app.post('/save-week', (req, res) => {
     }
 });
 
+app.post('/save-week-daily', (req, res) => {
+    const { week, entries } = req.body;
+
+    const insert = db.prepare(`
+        INSERT OR REPLACE INTO daily_entries (date, week, day_index, date_title, daily_main, daily_side, halal, veggi, daily_price)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const transaction = db.transaction((entries) => {
+        for (const entry of entries) {
+            insert.run(
+                entry.date,
+                entry.week,
+                entry.dayIndex,
+                entry.dateTitle,
+                entry.dailyMain,
+                entry.dailySide,
+                entry.halal,
+                entry.veggi,
+                entry.dailyPrice
+            );
+        }
+    });
+
+    try {
+        transaction(entries);
+        res.json({ message: 'Woche erfolgreich gespeichert' });
+    } catch (error) {
+        console.error('Error saving week:', error);
+        res.status(500).json({ error: 'Fehler beim Speichern der Woche' });
+    }
+});
+
 app.get('/load-week', (req, res) => {
     const { week } = req.query;
 
     try {
         const entries = db.prepare('SELECT * FROM menu_entries WHERE week = ?').all(week);
+        res.json(entries);
+    } catch (error) {
+        console.error('Error loading week:', error);
+        res.status(500).json({ error: 'Fehler beim Laden der Woche' });
+    }
+});
+
+app.get('/load-week-daily', (req, res) => {
+    const { week } = req.query;
+
+    try {
+        const entries = db.prepare('SELECT * FROM daily_entries WHERE week = ?').all(week);
         res.json(entries);
     } catch (error) {
         console.error('Error loading week:', error);
@@ -106,7 +169,7 @@ app.post('/generate-pdf', (req, res) => {
         }
         if (stderr) {
             console.error(`Error generating PDF: ${stderr}`);
-            return res.status(500).json({ success: false, error: stderr});
+            return res.status(500).json({ success: false, error: stderr });
         }
         console.log(`PDF generated: ${stdout}`);
         res.json({ success: true });
