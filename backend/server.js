@@ -65,6 +65,10 @@ app.get('/edit/dailyDish', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/public/edit', 'dailyDish.html'));
 });
 
+app.get('/feed', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/public', 'feed.html'));
+});
+
 app.post('/save-week', (req, res) => {
     const { week, entries } = req.body;
 
@@ -154,6 +158,38 @@ app.get('/load-week-daily', (req, res) => {
     } catch (error) {
         console.error('Error loading week:', error);
         res.status(500).json({ error: 'Fehler beim Laden der Woche' });
+    }
+});
+
+app.get('/load-day-menu', (req, res) => {
+    const { date } = req.query;
+
+    try {
+        const entry = db.prepare('SELECT * FROM menu_entries WHERE date = ?').get(date);
+        if (entry) {
+            res.json(entry);
+        } else {
+            res.status(404).json({ error: 'No menu entry found for the given date' });
+        }
+    } catch (error) {
+        console.error('Error loading menu:', error);
+        res.status(500).json({ error: 'Fehler beim Laden des Menüs' });
+    }
+});
+
+app.get('/load-day-daily', (req, res) => {
+    const { date } = req.query;
+
+    try {
+        const entry = db.prepare('SELECT * FROM daily_entries WHERE date = ?').get(date);
+        if (entry) {
+            res.json(entry);
+        } else {
+            res.status(404).json({ error: 'No daily entry found for the given date' });
+        }
+    } catch (error) {
+        console.error('Error loading daily:', error);
+        res.status(500).json({ error: 'Fehler beim Laden des Tagesgerichts' });
     }
 });
 
