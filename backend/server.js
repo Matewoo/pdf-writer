@@ -65,8 +65,12 @@ app.get('/edit/dailyDish', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/public/edit', 'dailyDish.html'));
 });
 
-app.get('/digitalSignage/feed', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/public/digitalSignage', 'feed.html'));
+app.get('/digitalSignage/dailyFeed', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/public/digitalSignage', 'dailyFeed.html'));
+});
+
+app.get('/digitalSignage/weeklyFeed', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/public/digitalSignage', 'weeklyFeed.html'));
 });
 
 app.post('/save-week', (req, res) => {

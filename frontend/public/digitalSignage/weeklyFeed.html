@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dailyFeed</title>
+    <title>weeklyFeed</title>
     <style>
         body {
             font-family: 'Fira Sans', sans-serif;
@@ -12,7 +12,7 @@
 
         h1 {
             color: #a81411;
-            font-size: 80px;
+            font-size: 50px;
             font-weight: 300;
             font-style: italic;
             margin-top: 0;
@@ -35,7 +35,6 @@
 
         .veggie {
             color: rgb(10, 194, 87);
-            font-weight: bold;
         }
 
         .halal {
@@ -47,47 +46,32 @@
             font-weight: 600;
             margin-top: 5px;
             margin-bottom: 0;
-            font-size: 32px;
+            font-size: 23px;
         }
 
         .side {
             margin-top: 0;
             margin-bottom: 0;
-            font-size: 32px;
-        }
-
-        .price {
-            font-style: italic;
-            font-size: 20px;
-            margin-top: 5px;
-            margin-bottom: 0;
+            margin-left:17px;
+            font-size: 23px;
         }
 
         hr {
             border: 0;
-            border-top: 0.5px solid #ffffff;
+            border-top: 0.5px solid #707070;
             width: 80%;
             margin-left: 0;
-            margin-top: 4px;
-            margin-bottom: 4px;
+            margin-top: 10px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 
 <body>
-    <h1>Was gibt's heute?</h1>
+    <h1>Freuen Sie sich auf:</h1>
     <h2></h2>
-    <hr>
 
-    
-    <script>
-        setInterval(() => {
-            window.location.reload();
-        }, 15000);
-
-    </script>
-
-    <script src="../src/feed.js"></script>
+    <script src="../src/weeklyFeed.js"></script>
 </body>
 
 </html>
