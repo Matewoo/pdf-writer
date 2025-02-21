@@ -43,7 +43,9 @@ function loadWeek(week) {
 
             const container = document.querySelector('body');
             container.innerHTML = `
-                <h1>Freuen Sie sich auf:</h1>
+                <div class="header">
+                    <h1>Freuen Sie sich auf:</h1>
+                </div>
                 <div class="content">
                     <div class="ticker-wrapper">
                         <div class="ticker-content">
