@@ -88,7 +88,7 @@ function startScrolling() {
     const contentHeight = tickerContents[0].offsetHeight;
 
     function scroll() {
-        currentPosition -= 0.5;
+        currentPosition -= 0.4;
 
         if (Math.abs(currentPosition) >= contentHeight) {
             currentPosition = 0;

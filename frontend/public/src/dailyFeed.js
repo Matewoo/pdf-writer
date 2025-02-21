@@ -52,7 +52,7 @@ function loadDay(day) {
                 <hr>
             `).join('')}
             <p class="category">— Tagessuppe</p>
-            <p class="main">Kürbiscremesuppe</p>
+            <p class="main"></p>
             <p class="price"><i>Großer Teller 4,00 € / Kleiner Teller 2,00 €</i></p>
             <hr>
 
