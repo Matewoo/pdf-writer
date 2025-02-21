@@ -4,16 +4,16 @@ function loadDay(day) {
         fetch(`/load-day-daily?date=${encodeURIComponent(day)}`).then(response => response.json())
     ])
         .then(([menuData, dailyData]) => {
-            if (menuData.error) {
-                console.error('Error loading menu:', menuData.error);
-                return;
-            }
-            if (dailyData.error) {
-                console.error('Error loading daily:', dailyData.error);
-                return;
-            }
 
             document.querySelector('h2').textContent = menuData.date_title.toUpperCase();
+
+            const defaultData = {
+                dailyMain: ' ',
+                dailySide: ' ',
+                dailyPrice: '6,50 € / 4,80 €',
+                dailySoup: ' ',
+                dailySoupPrice: 'Großer Teller 4,00 € / Kleiner Teller 2,00 €',
+            };
 
             const categories = {
                 meat: {
@@ -32,9 +32,9 @@ function loadDay(day) {
                 },
                 daily: {
                     category: 'Tagesempfehlung',
-                    main: dailyData.daily_main,
-                    side: dailyData.daily_side,
-                    price: dailyData.daily_price,
+                    main: dailyData.daily_main || defaultData.dailyMain,
+                    side: dailyData.daily_side || defaultData.dailySide,
+                    price: dailyData.daily_price || defaultData.dailyPrice,
                     special: dailyData.halal ? '„HALAL“' : (dailyData.veggi ? '„veggi“' : '')
                 }
             };
