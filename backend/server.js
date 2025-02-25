@@ -50,9 +50,13 @@ db.exec(`
         date_title TEXT,
         daily_main TEXT,
         daily_side TEXT,
-        halal BOOLEAN,
-        veggi BOOLEAN,
-        daily_price TEXT
+        daily_halal BOOLEAN,
+        daily_veggi BOOLEAN,
+        daily_price TEXT,
+        daily_soup TEXT,
+        soup_halal BOOLEAN,
+        soup_veggi BOOLEAN,
+        soup_price TEXT
     )
 `);
 
@@ -112,8 +116,8 @@ app.post('/save-week-daily', (req, res) => {
     const { week, entries } = req.body;
 
     const insert = db.prepare(`
-        INSERT OR REPLACE INTO daily_entries (date, week, day_index, date_title, daily_main, daily_side, halal, veggi, daily_price)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT OR REPLACE INTO daily_entries (date, week, day_index, date_title, daily_main, daily_side, daily_halal, daily_veggi, daily_price, daily_soup, soup_halal, soup_veggi, soup_price)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const transaction = db.transaction((entries) => {
@@ -125,9 +129,13 @@ app.post('/save-week-daily', (req, res) => {
                 entry.dateTitle,
                 entry.dailyMain,
                 entry.dailySide,
-                entry.halal,
-                entry.veggi,
-                entry.dailyPrice
+                entry.dailyHalal,
+                entry.dailyVeggi,
+                entry.dailyPrice,
+                entry.dailySoup,
+                entry.soupHalal,
+                entry.soupVeggi,
+                entry.soupPrice
             );
         }
     });

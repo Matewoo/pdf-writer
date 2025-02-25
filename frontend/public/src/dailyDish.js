@@ -100,7 +100,8 @@ function saveWeek() {
         currentDate.setDate(currentDate.getDate() + i);
 
         // Anpassen der Werte entsprechend der daily_entries Tabelle
-        const halalVeggiValue = document.querySelector(`select[name="halalVeggi${i}"]`).value;
+        const dailyHalalVeggiValue = document.querySelector(`select[name="dailyHalalVeggi${i}"]`).value;
+        const soupHalalVeggiValue = document.querySelector(`select[name="soupHalalVeggi${i}"]`).value;
         const entry = {
             date: currentDate.toISOString().split('T')[0],
             week: week,
@@ -108,13 +109,19 @@ function saveWeek() {
             dateTitle: document.querySelector(`input[name="dateTitle${i}"]`).value,
             dailyMain: document.querySelector(`input[name="dailyMain${i}"]`).value,
             dailySide: document.querySelector(`input[name="dailySide${i}"]`).value,
-            halal: halalVeggiValue === 'halal' ? 1 : 0,
-            veggi: halalVeggiValue === 'veggi' ? 1 : 0,
-            dailyPrice: document.querySelector(`input[name="dailyPrice${i}"]`).value
+            dailyHalal: dailyHalalVeggiValue === 'halal' ? 1 : 0,
+            dailyVeggi: dailyHalalVeggiValue === 'veggi' ? 1 : 0,
+            dailyPrice: document.querySelector(`input[name="dailyPrice${i}"]`).value,
+            dailySoup: document.querySelector(`input[name="dailySoup${i}"]`).value,
+            soupHalal: soupHalalVeggiValue === 'halal' ? 1 : 0,
+            soupVeggi: soupHalalVeggiValue === 'veggi' ? 1 : 0,
+            soupPrice: document.querySelector(`input[name="soupPrice${i}"]`).value
         };
 
         entries.push(entry);
     }
+
+    console.log('Saving week data:', { week, entries });
 
     fetch('/save-week-daily', {
         method: 'POST',
@@ -142,8 +149,11 @@ function loadWeekData(week) {
                 document.querySelector(`input[name="dateTitle${i}"]`).value = '';
                 document.querySelector(`input[name="dailyMain${i}"]`).value = '';
                 document.querySelector(`input[name="dailySide${i}"]`).value = '';
-                document.querySelector(`select[name="halalVeggi${i}"]`).value = '';
+                document.querySelector(`select[name="dailyHalalVeggi${i}"]`).value = '';
                 document.querySelector(`input[name="dailyPrice${i}"]`).value = '';
+                document.querySelector(`input[name="dailySoup${i}"]`).value = '';
+                document.querySelector(`select[name="soupHalalVeggi${i}"]`).value = '';
+                document.querySelector(`input[name="soupPrice${i}"]`).value = '';
             }
 
             // Fill input fields with loaded data
@@ -152,18 +162,29 @@ function loadWeekData(week) {
                 const dayIndex = entry.day_index;
                 const dateTitleInput = document.querySelector(`input[name="dateTitle${dayIndex}"]`);
                 const dailyPriceInput = document.querySelector(`input[name="dailyPrice${dayIndex}"]`);
-                const halalVeggiSelect = document.querySelector(`select[name="halalVeggi${dayIndex}"]`);
+                const dailyHalalVeggiSelect = document.querySelector(`select[name="dailyHalalVeggi${dayIndex}"]`);
+                const soupPriceInput = document.querySelector(`input[name="soupPrice${dayIndex}"]`);
+                const soupHalalVeggiSelect = document.querySelector(`select[name="soupHalalVeggi${dayIndex}"]`);
 
                 dateTitleInput.value = entry.date_title;
                 document.querySelector(`input[name="dailyMain${dayIndex}"]`).value = entry.daily_main;
                 document.querySelector(`input[name="dailySide${dayIndex}"]`).value = entry.daily_side;
                 dailyPriceInput.value = entry.daily_price;
-                if (entry.halal) {
-                    halalVeggiSelect.value = 'halal';
-                } else if (entry.veggi) {
-                    halalVeggiSelect.value = 'veggi';
+                document.querySelector(`input[name="dailySoup${dayIndex}"]`).value = entry.daily_soup;
+                soupPriceInput.value = entry.soup_price;
+                if (entry.daily_halal) {
+                    dailyHalalVeggiSelect.value = 'halal';
+                } else if (entry.daily_veggi) {
+                    dailyHalalVeggiSelect.value = 'veggi';
                 } else {
-                    halalVeggiSelect.value = '';
+                    dailyHalalVeggiSelect.value = '';
+                }
+                if (entry.soup_halal) {
+                    soupHalalVeggiSelect.value = 'halal';
+                } else if (entry.soup_veggi) {
+                    soupHalalVeggiSelect.value = 'veggi';
+                } else {
+                    soupHalalVeggiSelect.value = '';
                 }
 
                 // Automatically fill dateTitle if empty
@@ -182,6 +203,9 @@ function loadWeekData(week) {
                 if (!dailyPriceInput.value) {
                     dailyPriceInput.value = "6,50 € / 4,80 €";
                 }
+                if (!soupPriceInput.value) {
+                    soupPriceInput.value = "3,50 € / 2,50 €";
+                }
             });
 
             // Automatically fill dateTitle, dailyPrice if not in DB
@@ -189,6 +213,7 @@ function loadWeekData(week) {
                 if (!loadedDays.has(i)) {
                     const dateTitleInput = document.querySelector(`input[name="dateTitle${i}"]`);
                     const dailyPriceInput = document.querySelector(`input[name="dailyPrice${i}"]`);
+                    const soupPriceInput = document.querySelector(`input[name="soupPrice${i}"]`);
 
                     if (!dateTitleInput.value) {
                         const currentDate = new Date(currentWeek);
@@ -203,6 +228,9 @@ function loadWeekData(week) {
 
                     if (!dailyPriceInput.value) {
                         dailyPriceInput.value = "6,50 € / 4,80 €";
+                    }
+                    if (!soupPriceInput.value) {
+                        soupPriceInput.value = "3,50 € / 2,50 €";
                     }
                 }
             }

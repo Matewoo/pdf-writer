@@ -31,15 +31,23 @@
                             for (let i = 0; i < 5; i++) {
                                 document.write(`
                                     <div id="dayForm${i}" class="day-form ${i === 0 ? 'active' : ''}">
-                                        <input type="text" class="input-field-20" name="dateTitle${i}" style="bottom: 60.5%; left: 13.4%" placeholder="Datum">
-                                        <select class="input-field-19-h" name="halalVeggi${i}" style="bottom: 43.5%; left: 58%">
+                                        <input type="text" class="input-field-20" name="dateTitle${i}" style="bottom: 65.5%; left: 13.2%" placeholder="Datum">
+                                        <select class="input-field-19-h" name="dailyHalalVeggi${i}" style="bottom: 56.5%; left: 41.5%">
                                             <option value="" style="color:red;">----</option>
                                             <option value="halal" style="color:#00B050;">„HALAL“</option>
                                             <option value="veggi" style="color:#00B050;">„veggi“</option>
                                         </select>
-                                        <input type="text" class="input-field-19-b" name="dailyMain${i}" style="bottom: 30.5%; left: 13.4%" placeholder="Tagesgericht">
-                                        <input type="text" class="input-field-19" name="dailySide${i}" style="bottom: 24%; left: 13.4%" placeholder="Beilage">
-                                        <input type="text" class="input-field-14-i" name="dailyPrice${i}" style="bottom: 13.3%; left: 13.4%" placeholder="Preis">
+                                        <input type="text" class="input-field-19-b" name="dailyMain${i}" style="bottom: 48%; left: 13.2%" placeholder="Tagesgericht">
+                                        <input type="text" class="input-field-19" name="dailySide${i}" style="bottom: 41.2%; left: 13.2%" placeholder="Beilage">
+                                        <input type="text" class="input-field-14-i" name="dailyPrice${i}" style="bottom: 33.3%; left: 13.2%" placeholder="Preis">
+
+                                        <select class="input-field-19-h" name="soupHalalVeggi${i}" style="bottom: 22.7%; left: 32.5%">
+                                            <option value="" style="color:red;">----</option>
+                                            <option value="halal" style="color:#00B050;">„HALAL“</option>
+                                            <option value="veggi" style="color:#00B050;">„veggi“</option>
+                                        </select>
+                                        <input type="text" class="input-field-19-b" name="dailySoup${i}" style="bottom: 14.5%; left: 13.2%" placeholder="Tagessuppe">
+                                        <input type="text" class="input-field-14-i" name="soupPrice${i}" style="bottom: 6.3%; left: 13.2%" placeholder="Preis">
                                     </div>
                                 `);
                             }
