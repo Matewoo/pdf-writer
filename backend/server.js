@@ -208,9 +208,20 @@ app.get('/load-day-daily', (req, res) => {
 const { exec } = require('child_process');
 
 app.post('/generate-pdf', (req, res) => {
-    const { week } = req.body;
+    const { week, type } = req.body;
+    let pdfPath;
+    console.log('Type:', type);
+    console.log('Week:', week);
 
-    exec(`python.exe .\\scripts\\writePdf.py ${week}`, (error, stdout, stderr) => {
+    if (type === 'week') {
+        console.log('Generating PDF for week:', week);
+        pdfPath = `python.exe .\\scripts\\writePdf.py ${week}`;
+    } else {
+        console.log('Generating PDF for daily:', week);
+    }
+    
+
+    exec(pdfPath, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error generating PDF: ${error.message}`);
             return res.status(500).json({ success: false, error: error.message });

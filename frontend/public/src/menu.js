@@ -224,7 +224,7 @@ function loadWeekData(week) {
         });
 }
 
-function generatePDF() {
+function generatePDF(type) {
     const weekNumber = getWeekNumber(currentWeek);
     const year = currentWeek.getFullYear();
     const week = `KW${weekNumber}-${year}`;
@@ -234,7 +234,7 @@ function generatePDF() {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ week })
+        body: JSON.stringify({ week, type })
     })
         .then(response => response.json())
         .then(data => {
