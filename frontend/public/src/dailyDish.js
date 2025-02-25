@@ -1,6 +1,7 @@
 let currentWeek = new Date();
 currentWeek.setDate(currentWeek.getDate() - currentWeek.getDay() + 1); // Set to Monday
-let currentDayIndex = 0; // 0 = Monday, 4 = Friday
+let today = new Date();
+let currentDayIndex = today.getDay() - 1;
 
 function getWeekNumber(date) {
     const target = new Date(date.valueOf());
