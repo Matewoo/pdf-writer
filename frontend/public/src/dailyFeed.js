@@ -10,7 +10,7 @@ function loadDay(day) {
             const defaultData = {
                 dailyMain: ' ',
                 dailySide: ' ',
-                dailyPrice: '6,50 € / 4,80 €',
+                dailyPrice: '6,00 € / 4,20 €',
                 dailySoup: ' ',
                 dailySoupPrice: 'Großer Teller 4,00 € / Kleiner Teller 2,00 €',
             };
@@ -35,7 +35,14 @@ function loadDay(day) {
                     main: dailyData.daily_main || defaultData.dailyMain,
                     side: dailyData.daily_side || defaultData.dailySide,
                     price: dailyData.daily_price || defaultData.dailyPrice,
-                    special: dailyData.halal ? '„HALAL“' : (dailyData.veggi ? '„veggi“' : '')
+                    special: dailyData.daily_halal ? '„HALAL“' : (dailyData.daily_veggi ? '„veggi“' : '')
+                },
+                soup: {
+                    category: 'Tagessuppe',
+                    main: dailyData.daily_soup || defaultData.dailySoup,
+                    side: '',
+                    price: dailyData.daily_soup_price || defaultData.dailySoupPrice,
+                    special: dailyData.soup_halal ? '„HALAL“' : (dailyData.soup_veggi ? '„veggi“' : '')
                 }
             };
 
@@ -51,10 +58,6 @@ function loadDay(day) {
                 <p class="price">${item.price}</p>
                 <hr>
             `).join('')}
-            <p class="category">— Tagessuppe</p>
-            <p class="main"></p>
-            <p class="price"><i>Großer Teller 4,00 € / Kleiner Teller 2,00 €</i></p>
-            <hr>
 
             <p class="category">— Frisch und knackig</p>
             <p class="main">Tagessalat</p>
