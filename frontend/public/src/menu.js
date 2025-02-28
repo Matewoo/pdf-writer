@@ -227,14 +227,14 @@ function loadWeekData(week) {
 function generatePDF(type) {
     const weekNumber = getWeekNumber(currentWeek);
     const year = currentWeek.getFullYear();
-    const week = `KW${weekNumber}-${year}`;
+    const val = `KW${weekNumber}-${year}`;
 
     fetch('/generate-pdf', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ week, type })
+        body: JSON.stringify({ val, type })
     })
         .then(response => response.json())
         .then(data => {
