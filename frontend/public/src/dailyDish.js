@@ -202,10 +202,10 @@ function loadWeekData(week) {
 
                 // Automatically fill dailyPrice if empty
                 if (!dailyPriceInput.value) {
-                    dailyPriceInput.value = "6,50 € / 4,80 €";
+                    dailyPriceInput.value = "6,00 € / 4,20 €";
                 }
                 if (!soupPriceInput.value) {
-                    soupPriceInput.value = "3,50 € / 2,50 €";
+                    soupPriceInput.value = "Großer Teller 4,00 € / Kleiner Teller 2,00 €";
                 }
             });
 
@@ -228,10 +228,10 @@ function loadWeekData(week) {
                     }
 
                     if (!dailyPriceInput.value) {
-                        dailyPriceInput.value = "6,50 € / 4,80 €";
+                        dailyPriceInput.value = "6,00 € / 4,20 €";
                     }
                     if (!soupPriceInput.value) {
-                        soupPriceInput.value = "3,50 € / 2,50 €";
+                        soupPriceInput.value = "Großer Teller 4,00 € / Kleiner Teller 2,00 €";
                     }
                 }
             }
