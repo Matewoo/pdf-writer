@@ -39,7 +39,7 @@ df = df.fillna("")
 # Dateien einlesen
 pdf_template = os.path.join(base_dir, "../../data/speiseplan_vorlage.pdf")
 pdf_temp = os.path.join(base_dir, "../../data/temp_speiseplan.pdf")
-pdf_output = os.path.join(base_dir, "../../data/speiseplan_fertig.pdf")
+pdf_output = os.path.join(base_dir, f"../../frontend/public/data/{week}.pdf")
 
 # Schriftarten registrieren
 pdfmetrics.registerFont(TTFont("FiraSans", os.path.join(base_dir, "../../frontend/public/resources/fonts/FiraSans-Regular.ttf")))

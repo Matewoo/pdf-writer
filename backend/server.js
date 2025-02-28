@@ -215,7 +215,7 @@ app.post('/generate-pdf', (req, res) => {
 
     if (type === 'week') {
         console.log('Generating PDF for week:', val);
-        pdfPath = `python.exe .\\scripts\\writePdf.py ${val}`;
+        pdfPath = `python3 scripts/writePdf.py ${val}`;
     } else {
         console.log('Generating PDF for daily:', val);
     }

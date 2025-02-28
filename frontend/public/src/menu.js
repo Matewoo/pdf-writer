@@ -240,6 +240,7 @@ function generatePDF(type) {
         .then(data => {
             if (data.success) {
                 alert('PDF erfolgreich generiert');
+                window.open(`../../data/${val.replace('-', " ")}.pdf`, '_blank');
             } else {
                 const errorMessage = data.error || 'Unbekannter Fehler';
                 alert(`Fehler beim Generieren der PDF:\n\n${errorMessage}\n\nBitte kontaktieren Sie Ihren zuständigen Systemadministrator.`);
