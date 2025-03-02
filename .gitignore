@@ -1,3 +1,4 @@
 *.ttf
 /backend/node_modules
 /frontend/public/data
+.env

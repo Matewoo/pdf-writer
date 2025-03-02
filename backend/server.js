@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const Database = require('better-sqlite3');
 const fs = require('fs');
+const ldap = require('ldap-authentication'); // Importiere die Bibliothek
+require('dotenv').config(); // Lade die Umgebungsvariablen aus der .env-Datei
 
 const app = express();
 const server = http.createServer(app);
@@ -60,6 +62,34 @@ db.exec(`
     )
 `);
 
+// LDAP-Authentifizierung Route
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        // Für Active Directory verwenden wir eine andere Methode
+        const user = await ldap.authenticate({
+            ldapOpts: {
+                url: process.env.LDAP_URL,
+                reconnect: true
+            },
+            userDn: process.env.LDAP_USER_DN,             // Serviceaccount aus Umgebungsvariable
+            userPassword: process.env.LDAP_USER_PASSWORD,  // Serviceaccount Passwort aus Umgebungsvariable
+            userSearchBase: process.env.LDAP_SEARCH_BASE,  // Basis-Suchpfad aus Umgebungsvariable
+            usernameAttribute: 'sAMAccountName',           // AD verwendet sAMAccountName
+            username: username,                            // Eingegebener Nutzername
+            validatePassword: true,                        // Validiere Passwort des Users
+            passwordAttribute: 'userPassword'              // Passwort-Attribut
+        });
+        
+        console.log('Successfully authenticated:', user.cn);
+        res.json({ success: true, user: { name: user.cn } });
+    } catch (error) {
+        console.error('LDAP authentication error:', error);
+        res.status(401).json({ success: false, message: 'Authentication failed' });
+    }
+});
+
 // Routes
 app.get('/edit/menu', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/public/edit', 'menu.html'));
@@ -75,6 +105,10 @@ app.get('/digitalSignage/dailyFeed', (req, res) => {
 
 app.get('/digitalSignage/weeklyFeed', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/public/digitalSignage', 'weeklyFeed.html'));
+});
+
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/public', 'login.html'));
 });
 
 app.post('/save-week', (req, res) => {
