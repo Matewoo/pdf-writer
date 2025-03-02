@@ -2,6 +2,7 @@ let currentWeek = new Date();
 currentWeek.setDate(currentWeek.getDate() - currentWeek.getDay() + 1); // Set to Monday
 let today = new Date();
 let currentDayIndex = today.getDay() - 1;
+if (currentDayIndex < 0) {currentDayIndex = 0;}
 
 function getWeekNumber(date) {
     const target = new Date(date.valueOf());
@@ -242,22 +243,25 @@ function loadWeekData(week) {
         });
 }
 
-function generatePDF() {
-    const weekNumber = getWeekNumber(currentWeek);
-    const year = currentWeek.getFullYear();
-    const week = `KW${weekNumber}-${year}`;
+function generatePDF(type) {
+    saveWeek();
+    const currentDate = new Date(currentWeek);
+    currentDate.setDate(currentDate.getDate() + currentDayIndex);
+    const val = currentDate.toISOString().split('T')[0];
+
 
     fetch('/generate-pdf', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ week })
+        body: JSON.stringify({ val, type })
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 alert('PDF erfolgreich generiert');
+                window.open(`../../data/${val}.pdf`, '_blank');
             } else {
                 const errorMessage = data.error || 'Unbekannter Fehler';
                 alert(`Fehler beim Generieren der PDF:\n\n${errorMessage}\n\nBitte kontaktieren Sie Ihren zuständigen Systemadministrator.`);

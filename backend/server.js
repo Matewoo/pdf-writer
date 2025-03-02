@@ -215,9 +215,10 @@ app.post('/generate-pdf', (req, res) => {
 
     if (type === 'week') {
         console.log('Generating PDF for week:', val);
-        pdfPath = `python3 scripts/writePdf.py ${val}`;
-    } else {
+        pdfPath = `python3 scripts/writeWeeklyPdf.py ${val}`;
+    } else if (type === 'day') {
         console.log('Generating PDF for daily:', val);
+        pdfPath = `python3 /scripts/writeDailyMenu.py ${val}`;
     }
     
 

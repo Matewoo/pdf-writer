@@ -225,6 +225,7 @@ function loadWeekData(week) {
 }
 
 function generatePDF(type) {
+    saveWeek();
     const weekNumber = getWeekNumber(currentWeek);
     const year = currentWeek.getFullYear();
     const val = `KW${weekNumber}-${year}`;
