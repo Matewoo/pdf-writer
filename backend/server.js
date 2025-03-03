@@ -91,26 +91,33 @@ app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        // Für Active Directory verwenden wir eine andere Methode
+        // Define the domain for UPN format
+        const domain = 'telc.local';
+        const userPrincipalName = username.includes('@') ? username : `${username}@${domain}`;
+
+        // Verbindung mit LDAP - with Active Directory optimized config
         const user = await ldap.authenticate({
             ldapOpts: {
                 url: process.env.LDAP_URL,
-                reconnect: true
+                reconnect: true,
+                timeout: 10000
             },
-            userDn: process.env.LDAP_USER_DN,
-            userPassword: process.env.LDAP_USER_PASSWORD,
+            // Admin-Anmeldedaten für die erweiterte Suche verwenden
+            adminDn: process.env.LDAP_USER_DN,
+            adminPassword: process.env.LDAP_USER_PASSWORD,
             userSearchBase: process.env.LDAP_SEARCH_BASE,
-            usernameAttribute: 'sAMAccountName',
+            userSearchFilter: `(sAMAccountName=${username})`,
+            // Benutzerpasswort separat validieren
             username: username,
-            // Gruppenmitgliedschaften abfragen
-            attributes: ['cn', 'displayName', 'mail', 'memberOf'],
-            validatePassword: true,
-            passwordAttribute: 'userPassword'
+            userPassword: password,
+            usernameAttribute: 'sAMAccountName',
+            attributes: ['cn', 'displayName', 'sAMAccountName', 'mail', 'memberOf']
         });
         
-        console.log('Successfully authenticated:', user.cn);
+        console.log('User object keys:', Object.keys(user));
+        const userName = user.displayName || user.cn || user.sAMAccountName || username;
+        console.log('Successfully authenticated:', userName);
         
-        // Rollen aus den Gruppen bestimmen
         let isAdmin = false;
         let hasRestaurantAccess = false;
         
@@ -133,14 +140,14 @@ app.post('/login', async (req, res) => {
         if (!isAdmin && !hasRestaurantAccess) {
             return res.status(403).json({ 
                 success: false, 
-                message: 'Zugriff verweigert: Keine Berechtigung für die Speiseplan-Anwendung' 
+                message: 'Zugriff verweigert: Keine Berechtigung!' 
             });
         }
         
         // Session setzen mit Rolleninformationen
         req.session.authenticated = true;
         req.session.user = { 
-            name: user.cn,
+            name: userName,
             isAdmin: isAdmin,
             groups: user.memberOf || []
         };
@@ -155,7 +162,7 @@ app.post('/login', async (req, res) => {
         res.json({ 
             success: true, 
             user: { 
-                name: user.cn, 
+                name: userName, 
                 isAdmin: isAdmin 
             }, 
             redirect: returnTo 
