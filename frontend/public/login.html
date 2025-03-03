@@ -87,6 +87,7 @@
         function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('error-message');
 
             fetch('/login', {
                 method: 'POST',
@@ -98,14 +99,19 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    window.location.href = '/edit/menu';
+                    // Admin-Status im localStorage speichern
+                    localStorage.setItem('userRole', data.user.isAdmin ? 'admin' : 'user');
+                    localStorage.setItem('userName', data.user.name);
+                    window.location.href = data.redirect || '/edit/menu';
                 } else {
-                    document.getElementById('error-message').style.display = 'block';
+                    errorMessage.textContent = data.message || 'Login fehlgeschlagen. Bitte versuchen Sie es erneut.';
+                    errorMessage.style.display = 'block';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('error-message').style.display = 'block';
+                errorMessage.textContent = 'Login fehlgeschlagen. Bitte versuchen Sie es erneut.';
+                errorMessage.style.display = 'block';
             });
         }
         
