@@ -206,3 +206,61 @@ button {
 .day-form.active {
     display: block;
 }
+
+.user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: white;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.user-name {
+    font-weight: bold;
+    margin-right: 10px;
+    color: black;
+}
+
+.user-info {
+    color: black
+}
+
+.admin-badge {
+    background-color: #a81411;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.logout-button {
+    padding: 6px 12px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.admin-button {
+    padding: 6px 12px;
+    background-color: #a81411;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Für Admin-Only Elemente */
+.admin-only {
+    display: none; /* Standardmäßig versteckt, wird via JS eingeblendet */
+}
