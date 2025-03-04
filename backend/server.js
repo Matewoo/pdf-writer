@@ -7,6 +7,7 @@ const Database = require('better-sqlite3');
 const fs = require('fs');
 const ldap = require('ldap-authentication');
 const session = require('express-session');
+const { exec } = require('child_process');
 require('dotenv').config();
 
 const app = express();
@@ -382,7 +383,6 @@ app.get('/load-day-daily', (req, res) => {
     }
 });
 
-const { exec } = require('child_process');
 
 server.listen(4000, () => {
     console.log('Server is listening on port 4000');
