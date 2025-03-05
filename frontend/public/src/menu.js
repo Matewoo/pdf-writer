@@ -253,6 +253,202 @@ function generatePDF(type) {
         });
 }
 
+async function sendAiTranslateRequest() {
+    try {
+        // Get current week to load data
+        const weekNumber = getWeekNumber(currentWeek);
+        const year = currentWeek.getFullYear();
+        const week = `KW${weekNumber} ${year}`;
+
+        // Fetch the current week's menu data
+        const response = await fetch(`/load-week?week=${encodeURIComponent(week)}`);
+        const data = await response.json();
+
+        // Sort the data by day index to ensure correct order
+        data.sort((a, b) => a.day_index - b.day_index);
+
+        // Format the data as described in the prompt
+        let promptText = '';
+
+        data.forEach(entry => {
+            // Add meat dish
+            if (entry.meat_main) {
+                promptText += `${entry.meat_main}\n`;
+                if (entry.meat_side) {
+                    promptText += `${entry.meat_side}\n\n`;
+                } else {
+                    promptText += '\n';
+                }
+            }
+
+            // Add vegetarian dish
+            if (entry.veggi_main) {
+                promptText += `${entry.veggi_main}\n`;
+                if (entry.veggi_side) {
+                    promptText += `${entry.veggi_side}\n\n`;
+                } else {
+                    promptText += '\n';
+                }
+            }
+        });
+
+        // Send to the AI service
+        const aiResponse = await fetch('/ai-request', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ prompt: promptText })
+        });
+
+        const aiData = await aiResponse.json();
+        if (aiData.error) {
+            console.error('AI request failed:', aiData.error);
+            alert('AI-Übersetzung fehlgeschlagen: ' + aiData.error);
+            return;
+        }
+
+        // Show the results to the user
+        console.log('AI response:', aiData.result);
+
+        // Create a modal to display the translation
+        displayTranslation(aiData.result);
+    } catch (error) {
+        console.error('Error sending AI request:', error);
+        alert('Fehler bei der KI-Anfrage: ' + error.message);
+    }
+}
+
+function displayTranslation(translationText) {
+    try {
+        // Clean up the JSON string by removing markdown code block formatting
+        let cleanedText = translationText;
+        
+        // Remove ```json at the beginning
+        cleanedText = cleanedText.replace('```json', '');
+        
+        // Remove ``` at the end
+        cleanedText = cleanedText.replace('```', '');
+        
+        // Parse the cleaned JSON response
+        const translations = JSON.parse(cleanedText);
+        
+        // Create modal elements
+        const modal = document.createElement('div');
+        modal.classList.add('modal');
+
+        const modalContent = document.createElement('div');
+        modalContent.classList.add('modal-content');
+
+        const title = document.createElement('h2');
+        title.textContent = 'Übersetzung der Gerichte';
+        title.style.color = '#a81411';
+        title.style.marginTop = '0';
+
+        modalContent.appendChild(title);
+
+        // Create form for editing translations
+        const form = document.createElement('form');
+        form.classList.add('translation-form');
+
+
+        // Add input fields for each translation
+        translations.forEach((item, index) => {
+            const dishContainer = document.createElement('div');
+            dishContainer.classList.add('dish-container');
+
+
+            const dishNumber = document.createElement('div');
+            dishNumber.textContent = `Gericht ${index + 1}`;
+            dishNumber.style.fontWeight = 'bold';
+            dishNumber.style.marginBottom = '5px';
+
+            const mainCourseLabel = document.createElement('label');
+            mainCourseLabel.textContent = 'Hauptgericht:';
+            mainCourseLabel.style.marginBottom = '3px';
+            mainCourseLabel.style.fontWeight = 'bold';
+
+            const mainCourseInput = document.createElement('input');
+            mainCourseInput.type = 'text';
+            mainCourseInput.value = item.main_course;
+            mainCourseInput.style.padding = '8px';
+            mainCourseInput.style.marginBottom = '10px';
+            mainCourseInput.style.width = '100%';
+            mainCourseInput.style.boxSizing = 'border-box';
+
+            const sideDishLabel = document.createElement('label');
+            sideDishLabel.textContent = 'Beilage:';
+            sideDishLabel.style.marginBottom = '3px';
+            sideDishLabel.style.fontWeight = 'bold';
+
+            const sideDishInput = document.createElement('input');
+            sideDishInput.type = 'text';
+            sideDishInput.value = item.side_dish;
+            sideDishInput.style.padding = '8px';
+            sideDishInput.style.width = '100%';
+            sideDishInput.style.boxSizing = 'border-box';
+
+            dishContainer.appendChild(dishNumber);
+            dishContainer.appendChild(mainCourseLabel);
+            dishContainer.appendChild(mainCourseInput);
+            dishContainer.appendChild(sideDishLabel);
+            dishContainer.appendChild(sideDishInput);
+
+            form.appendChild(dishContainer);
+        });
+
+        modalContent.appendChild(form);
+
+        // Add buttons
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.display = 'flex';
+        buttonContainer.style.justifyContent = 'space-between';
+        buttonContainer.style.marginTop = '20px';
+
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = 'Schließen';
+        closeBtn.style.padding = '8px 16px';
+        closeBtn.style.backgroundColor = '#a81411';
+        closeBtn.style.color = 'white';
+        closeBtn.style.border = 'none';
+        closeBtn.style.borderRadius = '4px';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.onclick = () => document.body.removeChild(modal);
+
+        const copyBtn = document.createElement('button');
+        copyBtn.textContent = 'Übersetzungen kopieren';
+        copyBtn.style.padding = '8px 16px';
+        copyBtn.style.backgroundColor = '#1e88e5';
+        copyBtn.style.color = 'white';
+        copyBtn.style.border = 'none';
+        copyBtn.style.borderRadius = '4px';
+        copyBtn.style.cursor = 'pointer';
+        copyBtn.onclick = () => {
+            // Get all translated texts
+            const inputs = form.querySelectorAll('input');
+            let copyText = '';
+
+            for (let i = 0; i < inputs.length; i += 2) {
+                copyText += `${inputs[i].value}\n${inputs[i + 1].value}\n\n`;
+            }
+
+            navigator.clipboard.writeText(copyText)
+                .then(() => alert('Übersetzungen wurden in die Zwischenablage kopiert!'))
+                .catch(err => console.error('Fehler beim Kopieren:', err));
+        };
+
+        buttonContainer.appendChild(copyBtn);
+        buttonContainer.appendChild(closeBtn);
+        modalContent.appendChild(buttonContainer);
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+
+    } catch (error) {
+        console.error('Error parsing translation JSON:', error);
+        alert('Fehler beim Verarbeiten der Übersetzung. Das Format ist ungültig.');
+    }
+}
 
 // Initialize the display when page loads
 updateWeekDisplay();

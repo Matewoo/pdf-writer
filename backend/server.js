@@ -8,11 +8,16 @@ const fs = require('fs');
 const ldap = require('ldap-authentication');
 const session = require('express-session');
 const { exec } = require('child_process');
+const OpenAI = require('openai');
 require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+});
 
 // Session-Konfiguration
 app.use(session({
@@ -324,6 +329,27 @@ app.post('/generate-pdf', requireLogin, (req, res) => {
         console.log(`PDF generated: ${stdout}`);
         res.json({ success: true });
     });
+});
+
+app.post('/ai-request', requireAdmin, async (req, res) => {
+    try {
+        const { prompt } = req.body;
+        
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                { role: "system", content: "Du bist ein professioneller Übersetzer. Übersetze den folgenden Speiseplan ins Englische. Begriffe in Anführungszeichen sind Fachbegriffe oder Eigennamen und dürfen NICHT übersetzt werden. Falls ein Begriff nicht übersetzt wird, bleibt er im Output in Anführungszeichen. Die Übersetzung soll natürlich klingen: Hauptgericht und Beilage sollen mit worten verbunden sein, aber dennoch in ZWEI getrennten Zeilen stehen. Gib das Ergebnis in folgendem JSON-Format zurück: [{'main_course': '<Hauptgericht in natürlicher Formulierung>', 'side_dish': '<Beilage in natürlicher Formulierung>'}]." },
+                { role: "user", content: prompt }
+            ]
+        });
+
+        const messageContent = completion.choices[0].message.content;
+
+        res.json({ result: messageContent });
+    } catch (error) {
+        console.error('OpenAI API error:', error);
+        res.status(500).json({ error: 'Error processing AI request' });
+    }
 });
 
 // Ungeschützte API-Routen für die digitalSignage
