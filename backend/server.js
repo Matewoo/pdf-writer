@@ -5,10 +5,37 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const Database = require('better-sqlite3');
 const fs = require('fs');
+const ldap = require('ldap-authentication');
+const session = require('express-session');
+const { exec } = require('child_process');
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+
+// Session-Konfiguration
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'telc-speiseplan-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 3 * 24 * 60 * 60 * 1000 // 3 Tage in Millisekunden
+    }
+}));
+
+// Middleware für Authentifizierungsprüfung
+const requireLogin = (req, res, next) => {
+    // Wenn der Benutzer angemeldet ist, fahre mit der Anfrage fort
+    if (req.session.authenticated) {
+        return next();
+    }
+    // Speichere die ursprünglich angeforderte URL
+    req.session.returnTo = req.originalUrl;
+    // Andernfalls umleiten zur Anmeldeseite
+    res.redirect('/login');
+};
 
 // Middleware
 app.use(express.static(path.join(__dirname, '../frontend/public')));
@@ -60,13 +87,119 @@ db.exec(`
     )
 `);
 
-// Routes
-app.get('/edit/menu', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/public/edit', 'menu.html'));
+// LDAP-Authentifizierung Route
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        // Define the domain for UPN format
+        const domain = 'telc.local';
+        const userPrincipalName = username.includes('@') ? username : `${username}@${domain}`;
+
+        // Verbindung mit LDAP - with Active Directory optimized config
+        const user = await ldap.authenticate({
+            ldapOpts: {
+                url: process.env.LDAP_URL,
+                reconnect: true,
+                timeout: 10000
+            },
+            // Admin-Anmeldedaten für die erweiterte Suche verwenden
+            adminDn: process.env.LDAP_USER_DN,
+            adminPassword: process.env.LDAP_USER_PASSWORD,
+            userSearchBase: process.env.LDAP_SEARCH_BASE,
+            userSearchFilter: `(sAMAccountName=${username})`,
+            // Benutzerpasswort separat validieren
+            username: username,
+            userPassword: password,
+            usernameAttribute: 'sAMAccountName',
+            attributes: ['cn', 'displayName', 'sAMAccountName', 'mail', 'memberOf']
+        });
+        
+        console.log('User object keys:', Object.keys(user));
+        const userName = user.displayName || user.cn || user.sAMAccountName || username;
+        console.log('Successfully authenticated:', userName);
+        
+        let isAdmin = false;
+        let hasRestaurantAccess = false;
+        
+        if (user.memberOf && Array.isArray(user.memberOf)) {
+            isAdmin = user.memberOf.some(group => 
+                group.includes('CN=Domain Admins')
+            );
+            
+            // Prüfe ob Benutzer in der erforderlichen Gruppe ist
+            hasRestaurantAccess = user.memberOf.some(group => 
+                group.includes('CN=g32 Betriebsrestaurant')
+            );
+            
+            console.log('User groups:', user.memberOf);
+            console.log('Is admin:', isAdmin);
+            console.log('Has restaurant access:', hasRestaurantAccess);
+        }
+        
+        // Zugriff nur für Admin oder Mitglieder der Betriebsrestaurant-Gruppe gewähren
+        if (!isAdmin && !hasRestaurantAccess) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Zugriff verweigert: Keine Berechtigung!' 
+            });
+        }
+        
+        // Session setzen mit Rolleninformationen
+        req.session.authenticated = true;
+        req.session.user = { 
+            name: userName,
+            isAdmin: isAdmin,
+            groups: user.memberOf || []
+        };
+        
+        // Bestimme die Rücksprung-URL
+        let returnTo = '/edit/menu'; // Standard-Rücksprung
+        if (req.session.returnTo) {
+            returnTo = req.session.returnTo;
+            delete req.session.returnTo; // Lösche nach Verwendung
+        }
+        
+        res.json({ 
+            success: true, 
+            user: { 
+                name: userName, 
+                isAdmin: isAdmin 
+            }, 
+            redirect: returnTo 
+        });
+    } catch (error) {
+        console.error('LDAP authentication error:', error);
+        res.status(401).json({ success: false, message: 'Authentication failed' });
+    }
 });
 
-app.get('/edit/dailyDish', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/public/edit', 'dailyDish.html'));
+// Admin-Middleware hinzufügen
+const requireAdmin = (req, res, next) => {
+    if (req.session.authenticated) {
+        if (req.session.user && req.session.user.isAdmin) {
+            return next();
+        }
+        return res.status(403).send('Zugriff verweigert: Administratorrechte erforderlich');
+    }
+    req.session.returnTo = req.originalUrl;
+    res.redirect('/login');
+};
+
+// Logout-Route hinzufügen
+app.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/login');
+    });
+});
+
+// Öffentliche Routen
+app.get('/login', (req, res) => {
+    // Wenn bereits angemeldet, zur Hauptseite umleiten
+    if (req.session.authenticated) {
+        return res.redirect('/edit/menu');
+    }
+    res.sendFile(path.join(__dirname, '../frontend/public', 'login.html'));
 });
 
 app.get('/digitalSignage/dailyFeed', (req, res) => {
@@ -77,7 +210,22 @@ app.get('/digitalSignage/weeklyFeed', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/public/digitalSignage', 'weeklyFeed.html'));
 });
 
-app.post('/save-week', (req, res) => {
+// Geschützte Routen
+app.get('/edit/menu', requireLogin, (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/public/edit', 'menu.html'));
+});
+
+app.get('/edit/dailyDish', requireLogin, (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/public/edit', 'dailyDish.html'));
+});
+
+// Beispiel für eine Admin-Route
+app.get('/admin/settings', requireAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/public/admin', 'settings.html'));
+});
+
+// API-Routen, die auch geschützt werden sollten
+app.post('/save-week', requireLogin, (req, res) => {
     const { week, entries } = req.body;
 
     const insert = db.prepare(`
@@ -112,7 +260,7 @@ app.post('/save-week', (req, res) => {
     }
 });
 
-app.post('/save-week-daily', (req, res) => {
+app.post('/save-week-daily', requireLogin, (req, res) => {
     const { week, entries } = req.body;
 
     const insert = db.prepare(`
@@ -149,6 +297,36 @@ app.post('/save-week-daily', (req, res) => {
     }
 });
 
+app.post('/generate-pdf', requireLogin, (req, res) => {
+    const { val, type } = req.body;
+    let pdfPath;
+    console.log('Type:', type);
+    console.log('Val:', val);
+
+    if (type === 'week') {
+        console.log('Generating PDF for week:', val);
+        pdfPath = `python3 scripts/writeWeeklyMenu.py ${val}`;
+    } else if (type === 'day') {
+        console.log('Generating PDF for daily:', val);
+        pdfPath = `python3 scripts/writeDailyMenu.py ${val}`;
+    }
+    
+
+    exec(pdfPath, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error generating PDF: ${error.message}`);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        if (stderr) {
+            console.error(`Error generating PDF: ${stderr}`);
+            return res.status(500).json({ success: false, error: stderr });
+        }
+        console.log(`PDF generated: ${stdout}`);
+        res.json({ success: true });
+    });
+});
+
+// Ungeschützte API-Routen für die digitalSignage
 app.get('/load-week', (req, res) => {
     const { week } = req.query;
 
@@ -205,36 +383,6 @@ app.get('/load-day-daily', (req, res) => {
     }
 });
 
-const { exec } = require('child_process');
-
-app.post('/generate-pdf', (req, res) => {
-    const { val, type } = req.body;
-    let pdfPath;
-    console.log('Type:', type);
-    console.log('Val:', val);
-
-    if (type === 'week') {
-        console.log('Generating PDF for week:', val);
-        pdfPath = `python3 scripts/writeWeeklyMenu.py ${val}`;
-    } else if (type === 'day') {
-        console.log('Generating PDF for daily:', val);
-        pdfPath = `python3 scripts/writeDailyMenu.py ${val}`;
-    }
-    
-
-    exec(pdfPath, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error generating PDF: ${error.message}`);
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        if (stderr) {
-            console.error(`Error generating PDF: ${stderr}`);
-            return res.status(500).json({ success: false, error: stderr });
-        }
-        console.log(`PDF generated: ${stdout}`);
-        res.json({ success: true });
-    });
-});
 
 server.listen(4000, () => {
     console.log('Server is listening on port 4000');

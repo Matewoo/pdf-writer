@@ -206,3 +206,8 @@ button {
 .day-form.active {
     display: block;
 }
+
+/* Für Admin-Only Elemente */
+.admin-only {
+    display: none; /* Standardmäßig versteckt, wird via JS eingeblendet */
+}

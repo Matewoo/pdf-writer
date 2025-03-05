@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speiseplan Login</title>
+    <meta name="google" content="notranslate">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .login-container h1 {
+            color: #a81411;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+        .login-container input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: 'Fira Sans', sans-serif;
+            box-sizing: border-box;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 12px;
+            background-color: #a81411;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Fira Sans', sans-serif;
+            font-weight: 500;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .login-container button:hover {
+            background-color: #8e1210;
+        }
+        .telc-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .telc-logo img {
+            max-width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="telc-logo">
+            <img src="/resources/img/telc-logo.png" alt="telc Logo" onerror="this.style.display='none'">
+        </div>
+        <h1>Speiseplan Login</h1>
+        <input type="text" id="username" placeholder="Benutzername">
+        <input type="password" id="password" placeholder="Passwort">
+        <button onclick="login()">Anmelden</button>
+        <p id="error-message" style="color: #a81411; text-align: center; display: none; margin-top: 15px; font-weight: 500;">
+            Login fehlgeschlagen. Bitte versuchen Sie es erneut.
+        </p>
+    </div>
+    <script>
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('error-message');
+
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Admin-Status im localStorage speichern
+                    localStorage.setItem('userRole', data.user.isAdmin ? 'admin' : 'user');
+                    localStorage.setItem('userName', data.user.name);
+                    window.location.href = data.redirect || '/edit/menu';
+                } else {
+                    errorMessage.textContent = data.message || 'Login fehlgeschlagen. Bitte versuchen Sie es erneut.';
+                    errorMessage.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorMessage.textContent = 'Login fehlgeschlagen. Bitte versuchen Sie es erneut.';
+                errorMessage.style.display = 'block';
+            });
+        }
+        
+        // Tastaturereignis für Enter-Taste hinzufügen
+        document.getElementById('password').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                login();
+            }
+        });
+    </script>
+</body>
+</html>
