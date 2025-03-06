@@ -319,19 +319,46 @@ async function sendAiTranslateRequest() {
     }
 }
 
+function sendTestTranslateRequest() {
+    const testResponse = `[{'main_course':'Turkey schnitzel with pepper sauce','side_dish':'served with spaghetti'},{'main_course':'Lentil curry with coconut milk','side_dish':'served with rice'},{'main_course':'White cabbage stew with potatoes and ground beef','side_dish':'served with a side salad and homemade bread'},{'main_course':'Sweet potato gnocchi with cheese sauce and arugula','side_dish':'served with a side salad'},{'main_course':'Ramsons bratwurst','side_dish':'accompanied by steakhouse fries'},{'main_course':'"Poached eggs" in mustard sauce','side_dish':'served with boiled potatoes and a side salad'},{'main_course':'Chicken breast fillet in herb sauce','side_dish':'with fried potatoes and a side salad'},{'main_course':'Vegetable fritter with dip','side_dish':'served with couscous'},{'main_course':'Halibut fillet in lemon herb sauce','side_dish':'served with boiled potatoes and a side salad'},{'main_course':'Vegetable rösti with dip','side_dish':'served with potato salad'}]`;
+    displayTranslation(testResponse);
+}
+
 function displayTranslation(translationText) {
     try {
-        // Clean up the JSON string by removing markdown code block formatting
-        let cleanedText = translationText;
+        console.log('Original text:', translationText);
+
+        let cleanedText = translationText
+            .trim()
+            .replace(/\n/g, ''); // Remove any line breaks
         
-        // Remove ```json at the beginning
-        cleanedText = cleanedText.replace('```json', '');
+        // Extract just the array part if needed
+        if (cleanedText.indexOf('[') >= 0) {
+            cleanedText = cleanedText.substring(cleanedText.indexOf('['));
+            
+            if (!cleanedText.endsWith(']')) {
+                const lastBracket = cleanedText.lastIndexOf(']');
+                if (lastBracket > 0) {
+                    cleanedText = cleanedText.substring(0, lastBracket + 1);
+                }
+            }
+        }
         
-        // Remove ``` at the end
-        cleanedText = cleanedText.replace('```', '');
+        console.log('Extracted JSON-like text:', cleanedText);
+
+        const parseJsObject = function(str) {
+            try {
+                // Safely evaluate the string as a JavaScript expression
+                return (new Function('return ' + str))();
+            } catch (e) {
+                console.error('Failed to parse:', e);
+                throw new Error('Invalid format in translation response');
+            }
+        };
         
-        // Parse the cleaned JSON response
-        const translations = JSON.parse(cleanedText);
+        // Parse the translation data
+        const translations = parseJsObject(cleanedText);
+        console.log('Parsed translations:', translations);
         
         // Create modal elements
         const modal = document.createElement('div');
