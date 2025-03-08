@@ -224,7 +224,7 @@ function loadWeekData(week) {
         });
 }
 
-function generatePDF(type) {
+function generatePDF(type, trans) {
     saveWeek();
     const weekNumber = getWeekNumber(currentWeek);
     const year = currentWeek.getFullYear();
@@ -235,17 +235,22 @@ function generatePDF(type) {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ val, type })
+        body: JSON.stringify({ val, type, trans })
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 alert('PDF erfolgreich generiert');
-                window.open(`../../data/${val.replace('-', " ")}.pdf`, '_blank');
+                if (trans === '') {
+                    window.open(`../../data/${val.replace('-', " ")}_DE.pdf`, '_blank');
+                } else {
+                    window.open(`../../data/${val.replace('-', " ")}_EN.pdf`, '_blank');
+                }
             } else {
                 const errorMessage = data.error || 'Unbekannter Fehler';
                 alert(`Fehler beim Generieren der PDF:\n\n${errorMessage}\n\nBitte kontaktieren Sie Ihren zuständigen Systemadministrator.`);
             }
+            
         })
         .catch(error => {
             console.error('Error generating PDF:', error);
@@ -269,11 +274,18 @@ async function sendAiTranslateRequest() {
 
         // Format the data as described in the prompt
         let promptText = '';
+        // Store original dishes for reference
+        const originalDishes = [];
 
         data.forEach(entry => {
             // Add meat dish
             if (entry.meat_main) {
                 promptText += `${entry.meat_main}\n`;
+                originalDishes.push({
+                    main: entry.meat_main,
+                    side: entry.meat_side || ''
+                });
+                
                 if (entry.meat_side) {
                     promptText += `${entry.meat_side}\n\n`;
                 } else {
@@ -284,6 +296,11 @@ async function sendAiTranslateRequest() {
             // Add vegetarian dish
             if (entry.veggi_main) {
                 promptText += `${entry.veggi_main}\n`;
+                originalDishes.push({
+                    main: entry.veggi_main,
+                    side: entry.veggi_side || ''
+                });
+                
                 if (entry.veggi_side) {
                     promptText += `${entry.veggi_side}\n\n`;
                 } else {
@@ -310,9 +327,10 @@ async function sendAiTranslateRequest() {
 
         // Show the results to the user
         console.log('AI response:', aiData.result);
+        console.log('Original dishes:', originalDishes);
 
-        // Create a modal to display the translation
-        displayTranslation(aiData.result);
+        // Create a modal to display the translation with original dishes
+        displayTranslation(aiData.result, originalDishes);
     } catch (error) {
         console.error('Error sending AI request:', error);
         alert('Fehler bei der KI-Anfrage: ' + error.message);
@@ -321,10 +339,25 @@ async function sendAiTranslateRequest() {
 
 function sendTestTranslateRequest() {
     const testResponse = `[{'main_course':'Turkey schnitzel with pepper sauce','side_dish':'served with spaghetti'},{'main_course':'Lentil curry with coconut milk','side_dish':'served with rice'},{'main_course':'White cabbage stew with potatoes and ground beef','side_dish':'served with a side salad and homemade bread'},{'main_course':'Sweet potato gnocchi with cheese sauce and arugula','side_dish':'served with a side salad'},{'main_course':'Ramsons bratwurst','side_dish':'accompanied by steakhouse fries'},{'main_course':'"Poached eggs" in mustard sauce','side_dish':'served with boiled potatoes and a side salad'},{'main_course':'Chicken breast fillet in herb sauce','side_dish':'with fried potatoes and a side salad'},{'main_course':'Vegetable fritter with dip','side_dish':'served with couscous'},{'main_course':'Halibut fillet in lemon herb sauce','side_dish':'served with boiled potatoes and a side salad'},{'main_course':'Vegetable rösti with dip','side_dish':'served with potato salad'}]`;
-    displayTranslation(testResponse);
+    
+    // Beispiel-deutsche Gerichte für den Test
+    const testOriginalDishes = [
+        { main: 'Putenschnitzel mit Pfeffersauce', side: 'mit Spaghetti' },
+        { main: 'Linsencurry mit Kokosmilch', side: 'mit Reis' },
+        { main: 'Weißkohleintopf mit Kartoffeln und Hackfleisch', side: 'mit Salat und hausgemachtem Brot' },
+        { main: 'Süßkartoffel-Gnocchi mit Käsesauce und Rucola', side: 'mit Salat' },
+        { main: 'Bärlauch-Bratwurst', side: 'mit Steakhouse-Pommes' },
+        { main: '"Verlorene Eier" in Senfsauce', side: 'mit Kartoffeln und Salat' },
+        { main: 'Hähnchenbrust-Filet in Kräutersauce', side: 'mit Bratkartoffeln und Salat' },
+        { main: 'Gemüsepuffer mit Dip', side: 'mit Couscous' },
+        { main: 'Heilbuttfilet in Zitronenkräutersauce', side: 'mit Salzkartoffeln und Salat' },
+        { main: 'Gemüserösti mit Dip', side: 'mit Kartoffelsalat' }
+    ];
+    
+    displayTranslation(testResponse, testOriginalDishes);
 }
 
-function displayTranslation(translationText) {
+function displayTranslation(translationText, originalDishes = []) {
     try {
         console.log('Original text:', translationText);
 
@@ -384,17 +417,18 @@ function displayTranslation(translationText) {
             const dishContainer = document.createElement('div');
             dishContainer.classList.add('dish-container');
 
-
-            const dishNumber = document.createElement('div');
-            dishNumber.textContent = `Gericht ${index + 1}`;
-            dishNumber.style.fontWeight = 'bold';
-            dishNumber.style.marginBottom = '5px';
-
-            const mainCourseLabel = document.createElement('label');
-            mainCourseLabel.textContent = 'Hauptgericht:';
-            mainCourseLabel.style.marginBottom = '3px';
-            mainCourseLabel.style.fontWeight = 'bold';
-
+            // Deutsche Bezeichnung für das aktuelle Gericht
+            const originalDish = originalDishes[index] || { main: '', side: '' };
+            
+            // Gericht-Header mit deutschem Original
+            const dishHeader = document.createElement('div');
+            dishHeader.style.fontWeight = 'bold';
+            dishHeader.style.marginBottom = '10px';
+            dishHeader.style.borderBottom = '1px solid #ccc';
+            dishHeader.style.paddingBottom = '5px';
+            dishHeader.style.color = '#a81411';
+            dishHeader.textContent = `${originalDish.main} ${originalDish.side}`;
+            
             const mainCourseInput = document.createElement('input');
             mainCourseInput.type = 'text';
             mainCourseInput.value = item.main_course;
@@ -403,11 +437,6 @@ function displayTranslation(translationText) {
             mainCourseInput.style.width = '100%';
             mainCourseInput.style.boxSizing = 'border-box';
 
-            const sideDishLabel = document.createElement('label');
-            sideDishLabel.textContent = 'Beilage:';
-            sideDishLabel.style.marginBottom = '3px';
-            sideDishLabel.style.fontWeight = 'bold';
-
             const sideDishInput = document.createElement('input');
             sideDishInput.type = 'text';
             sideDishInput.value = item.side_dish;
@@ -415,10 +444,8 @@ function displayTranslation(translationText) {
             sideDishInput.style.width = '100%';
             sideDishInput.style.boxSizing = 'border-box';
 
-            dishContainer.appendChild(dishNumber);
-            dishContainer.appendChild(mainCourseLabel);
+            dishContainer.appendChild(dishHeader);
             dishContainer.appendChild(mainCourseInput);
-            dishContainer.appendChild(sideDishLabel);
             dishContainer.appendChild(sideDishInput);
 
             form.appendChild(dishContainer);
@@ -429,8 +456,22 @@ function displayTranslation(translationText) {
         // Add buttons
         const buttonContainer = document.createElement('div');
         buttonContainer.style.display = 'flex';
-        buttonContainer.style.justifyContent = 'space-between';
+        buttonContainer.style.justifyContent = 'first';
         buttonContainer.style.marginTop = '20px';
+        buttonContainer.style.alignItems = 'center';
+        buttonContainer.style.gap = '10px';
+
+        const generateBtn = document.createElement('button');
+        generateBtn.textContent = 'PDF generieren';
+        generateBtn.style.padding = '8px 16px';
+        generateBtn.style.backgroundColor = '#1e88e5';
+        generateBtn.style.color = 'white';
+        generateBtn.style.border = 'none';
+        generateBtn.style.borderRadius = '4px';
+        generateBtn.style.cursor = 'pointer';
+        generateBtn.onclick = () => {
+            generatePDF('week', translations);
+        };
 
         const closeBtn = document.createElement('button');
         closeBtn.textContent = 'Schließen';
@@ -464,8 +505,15 @@ function displayTranslation(translationText) {
                 .catch(err => console.error('Fehler beim Kopieren:', err));
         };
 
+        const disclaimer = document.createElement('p');
+        disclaimer.textContent = 'Hinweis: KI generierter Inhalt kann Fehler enthalten. Bitte überprüfen Sie die Übersetzungen sorgfältig.';
+        disclaimer.style.margin = '0'
+        disclaimer.style.fontWeight = 'bold';
+
+        buttonContainer.appendChild(generateBtn);
         buttonContainer.appendChild(copyBtn);
         buttonContainer.appendChild(closeBtn);
+        buttonContainer.appendChild(disclaimer);
         modalContent.appendChild(buttonContainer);
 
         modal.appendChild(modalContent);
