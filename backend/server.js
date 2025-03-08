@@ -179,6 +179,45 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// Dev-Login Route - nur verfügbar wenn NODE_ENV=development
+if (process.env.NODE_ENV === 'development') {
+    app.post('/dev-login', (req, res) => {
+        const { username, password } = req.body;
+        
+        // Prüfe ob es sich um den Dev-User handelt und das Passwort aus .env stimmt
+        if (username === 'dev' && password === process.env.DEV_LOGIN_PASSWORD) {
+            // Session setzen
+            req.session.authenticated = true;
+            req.session.user = {
+                name: 'Developer',
+                isAdmin: true, // Dev-User hat Admin-Rechte
+                groups: ['CN=Domain Admins,CN=Users,DC=telc,DC=local'] // Simulierte Gruppen
+            };
+
+            // Bestimme die Rücksprung-URL
+            let returnTo = '/edit/menu'; // Standard-Rücksprung
+            if (req.session.returnTo) {
+                returnTo = req.session.returnTo;
+                delete req.session.returnTo;
+            }
+
+            res.json({
+                success: true,
+                user: {
+                    name: 'Developer',
+                    isAdmin: true
+                },
+                redirect: returnTo
+            });
+        } else {
+            res.status(401).json({
+                success: false,
+                message: 'Invalid dev credentials'
+            });
+        }
+    });
+}
+
 // Admin-Middleware hinzufügen
 const requireAdmin = (req, res, next) => {
     if (req.session.authenticated) {
@@ -303,32 +342,51 @@ app.post('/save-week-daily', requireLogin, (req, res) => {
 });
 
 app.post('/generate-pdf', requireLogin, (req, res) => {
-    const { val, type } = req.body;
+    const { val, type, trans } = req.body;
     let pdfPath;
     console.log('Type:', type);
     console.log('Val:', val);
 
-    if (type === 'week') {
-        console.log('Generating PDF for week:', val);
-        pdfPath = `python3 scripts/writeWeeklyMenu.py ${val}`;
-    } else if (type === 'day') {
-        console.log('Generating PDF for daily:', val);
-        pdfPath = `python3 scripts/writeDailyMenu.py ${val}`;
-    }
-    
+    try {
+        if (type === 'week' && trans === '') {
+            console.log('Generating PDF for week:', val);
+            pdfPath = `python.exe .\\scripts\\writeWeeklyMenuDE.py ${val}`;
+        } else if (type === 'week' && trans !== '') {
+            console.log('Generating EN PDF for week:', val);
+            
+            // Create temporary JSON file with translations with explicit UTF-8 encoding
+            const tempJsonPath = path.join(__dirname, 'temp_translations.json');
+            fs.writeFileSync(tempJsonPath, JSON.stringify(trans, null, 2), 'utf8');
+            
+            // Call Python script without passing the translations as command line argument
+            pdfPath = `python.exe .\\scripts\\writeWeeklyMenuEN.py ${val}`;
+        } else if (type === 'day') {
+            console.log('Generating PDF for daily:', val);
+            pdfPath = `python3 scripts/writeDailyMenu.py ${val}`;
+        }
+        
+        exec(pdfPath, (error, stdout, stderr) => {
+            // Clean up the temporary file if it was created
+            const tempJsonPath = path.join(__dirname, 'temp_translations.json');
+            if (fs.existsSync(tempJsonPath)) {
+                fs.unlinkSync(tempJsonPath);
+            }
 
-    exec(pdfPath, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error generating PDF: ${error.message}`);
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        if (stderr) {
-            console.error(`Error generating PDF: ${stderr}`);
-            return res.status(500).json({ success: false, error: stderr });
-        }
-        console.log(`PDF generated: ${stdout}`);
-        res.json({ success: true });
-    });
+            if (error) {
+                console.error(`Error generating PDF: ${error.message}`);
+                return res.status(500).json({ success: false, error: error.message });
+            }
+            if (stderr) {
+                console.error(`Error generating PDF: ${stderr}`);
+                return res.status(500).json({ success: false, error: stderr });
+            }
+            console.log(`PDF generated: ${stdout}`);
+            res.json({ success: true });
+        });
+    } catch (error) {
+        console.error('Error in PDF generation process:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
 app.post('/ai-request', requireAdmin, async (req, res) => {
