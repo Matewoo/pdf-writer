@@ -84,11 +84,13 @@ for _, row in df.iterrows():
     else:
         erste_seite = False  # Nach der ersten Iteration abschalten
 
+    date_title = row["date_title"].replace("MONTAG", "MONDAY").replace("DIENSTAG", "TUESDAY").replace("MITTWOCH", "WEDNESDAY").replace("DONNERSTAG", "THURSDAY").replace("FREITAG", "FRIDAY").replace("SAMSTAG", "SATURDAY").replace("SONNTAG", "SUNDAY").replace("01.", "1st").replace("02.", "2nd").replace("03.", "3rd").replace("04.", "4th").replace("05.", "5th").replace("06.", "6th").replace("07.", "7th").replace("08.", "8th").replace("09.", "9th").replace("10.", "10th").replace("11.", "11th").replace("12.", "12th").replace("13.", "13th").replace("14.", "14th").replace("15.", "15th").replace("16.", "16th").replace("17.", "17th").replace("18.", "18th").replace("19.", "19th").replace("20.", "20th").replace("21.", "21st").replace("22.", "22nd").replace("23.", "23rd").replace("24.", "24th").replace("25.", "25th").replace("26.", "26th").replace("27.", "27th").replace("28.", "28th").replace("29.", "29th").replace("30.", "30th").replace("31.", "31st").replace("JANUAR", "JANUARY").replace("FEBRUAR", "FEBRUARY").replace("MÄRZ", "MARCH").replace("APRIL", "APRIL").replace("MAI", "MAY").replace("JUNI", "JUNE").replace("JULI", "JULY").replace("AUGUST", "AUGUST").replace("SEPTEMBER", "SEPTEMBER").replace("OKTOBER", "OCTOBER").replace("NOVEMBER", "NOVEMBER").replace("DEZEMBER", "DECEMBER")
+
     # Wochentag & Datum fett/rot setzen
     x, y = positions["Date"]
     c.setFont("FiraSansMedium", 14)
     c.setFillColor(dunkelrot)
-    c.drawString(x, y, row["date_title"])
+    c.drawString(x, y, date_title)
 
     # Get translations for meat meal if available
     meat_main_en = ""
