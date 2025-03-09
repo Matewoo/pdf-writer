@@ -87,6 +87,13 @@
         function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+
+            // Wenn Username "dev" ist, nutze dev-login
+            if (username === 'dev') {
+                devLogin();
+                return;
+            }
+
             const errorMessage = document.getElementById('error-message');
 
             fetch('/login', {
@@ -111,6 +118,36 @@
             .catch(error => {
                 console.error('Error:', error);
                 errorMessage.textContent = 'Login fehlgeschlagen. Bitte versuchen Sie es erneut.';
+                errorMessage.style.display = 'block';
+            });
+        }
+
+        function devLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('error-message');
+
+            fetch('/dev-login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('userRole', data.user.isAdmin ? 'admin' : 'user');
+                    localStorage.setItem('userName', data.user.name);
+                    window.location.href = data.redirect || '/edit/menu';
+                } else {
+                    errorMessage.textContent = data.message || 'Dev-Login fehlgeschlagen';
+                    errorMessage.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorMessage.textContent = 'Dev-Login fehlgeschlagen';
                 errorMessage.style.display = 'block';
             });
         }
