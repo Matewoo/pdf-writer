@@ -411,7 +411,6 @@ function displayTranslation(translationText, originalDishes = []) {
         const form = document.createElement('form');
         form.classList.add('translation-form');
 
-
         // Add input fields for each translation
         translations.forEach((item, index) => {
             const dishContainer = document.createElement('div');
@@ -470,7 +469,21 @@ function displayTranslation(translationText, originalDishes = []) {
         generateBtn.style.borderRadius = '4px';
         generateBtn.style.cursor = 'pointer';
         generateBtn.onclick = () => {
-            generatePDF('week', translations);
+            // Collect the current values from the text fields
+            const updatedTranslations = [];
+            const inputs = form.querySelectorAll('input');
+            
+            for (let i = 0; i < inputs.length; i += 2) {
+                const mainCourse = inputs[i].value;
+                const sideDish = inputs[i + 1].value;
+                updatedTranslations.push({
+                    main_course: mainCourse,
+                    side_dish: sideDish
+                });
+            }
+
+            // Pass the updated translations to the generatePDF function
+            generatePDF('week', updatedTranslations);
         };
 
         const closeBtn = document.createElement('button');
