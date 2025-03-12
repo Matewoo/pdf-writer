@@ -254,6 +254,10 @@ app.get('/digitalSignage/weeklyFeed', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/public/digitalSignage', 'weeklyFeed.html'));
 });
 
+app.get('/digitalSignage/tabletFeed', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/public/digitalSignage', 'tabletFeed.html'));
+});
+
 // Geschützte Routen
 app.get('/edit/menu', requireLogin, (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/public/edit', 'menu.html'));
