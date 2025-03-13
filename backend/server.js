@@ -75,6 +75,17 @@ db.exec(`
 `);
 
 db.exec(`
+    CREATE TABLE IF NOT EXISTS menu_entries_en (
+        date TEXT PRIMARY KEY,
+        week TEXT,
+        meat_main TEXT,
+        meat_side TEXT,
+        veggi_main TEXT,
+        veggi_side TEXT
+    )
+`);
+
+db.exec(`
     CREATE TABLE IF NOT EXISTS daily_entries (
         date TEXT PRIMARY KEY,
         week TEXT,
@@ -295,6 +306,36 @@ app.post('/save-week', requireLogin, (req, res) => {
                 entry.veggiMain,
                 entry.veggiSide,
                 entry.veggiPrice
+            );
+        }
+    });
+
+    try {
+        transaction(entries);
+        res.json({ message: 'Woche erfolgreich gespeichert' });
+    } catch (error) {
+        console.error('Error saving week:', error);
+        res.status(500).json({ error: 'Fehler beim Speichern der Woche' });
+    }
+});
+
+app.post('/save-week-en', requireLogin, (req, res) => {
+    const { week, entries } = req.body;
+
+    const insert = db.prepare(`
+        INSERT OR REPLACE INTO menu_entries_en (date, week, meat_main, meat_side, veggi_main, veggi_side)
+        VALUES (?, ?, ?, ?, ?, ?)
+    `);
+
+    const transaction = db.transaction((entries) => {
+        for (const entry of entries) {
+            insert.run(
+                entry.date,
+                week,
+                entry.meatMain,
+                entry.meatSide,
+                entry.veggiMain,
+                entry.veggiSide,
             );
         }
     });
