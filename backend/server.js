@@ -468,6 +468,18 @@ app.get('/load-week', (req, res) => {
     }
 });
 
+app.get('/load-week-en', (req, res) => {
+    const { week } = req.query;
+
+    try {
+        const entries = db.prepare('SELECT * FROM menu_entries_en WHERE week = ?').all(week);
+        res.json(entries);
+    } catch (error) {
+        console.error('Error loading week:', error);
+        res.status(500).json({ error: 'Fehler beim Laden der Woche' });
+    }
+});
+
 app.get('/load-week-daily', (req, res) => {
     const { week } = req.query;
 
