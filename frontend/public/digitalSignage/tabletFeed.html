@@ -10,7 +10,14 @@
         body {
             font-family: 'Fira Sans', sans-serif;
             margin-left: 15px;
+            /* Remove the transition effect for hard cut */
+            transition: none;
         }
+
+        /* Remove fade-out class styling since we don't need it anymore */
+        /* body.fade-out {
+            opacity: 0;
+        } */
 
         h1 {
             color: #a81411;
@@ -73,20 +80,28 @@
             margin-top: 4px;
             margin-bottom: 4px;
         }
+
+        .language-indicator {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(72, 163, 238, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
     </style>
 </head>
 
 <body>
-    <h1>Was gibt's heute?</h1>
-    <h2></h2>
-    <hr>
-
+    <!-- Content will be dynamically inserted by the JS -->
     
     <script>
+        // Page refresh every hour (in milliseconds) - 60 minutes
         setInterval(() => {
             window.location.reload();
-        }, 600000);
-
+        }, 3600000);
     </script>
 
     <script src="../src/tabletFeed.js"></script>
