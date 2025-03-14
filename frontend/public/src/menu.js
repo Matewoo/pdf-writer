@@ -272,41 +272,51 @@ async function sendAiTranslateRequest() {
         // Sort the data by day index to ensure correct order
         data.sort((a, b) => a.day_index - b.day_index);
 
-        // Format the data as described in the prompt
-        let promptText = '';
+        // Construct menu items array
+        const menuItems = [];
         
         data.forEach(entry => {
             // Add meat dish
             if (entry.meat_main) {
-                promptText += `${entry.meat_main}\n`;
-                
-                if (entry.meat_side) {
-                    promptText += `${entry.meat_side}\n\n`;
-                } else {
-                    promptText += '\n';
-                }
+                menuItems.push({
+                    main: entry.meat_main,
+                    side: entry.meat_side || ''
+                });
             }
 
             // Add vegetarian dish
             if (entry.veggi_main) {
-                promptText += `${entry.veggi_main}\n`;
-                
-                if (entry.veggi_side) {
-                    promptText += `${entry.veggi_side}\n\n`;
-                } else {
-                    promptText += '\n';
-                }
+                menuItems.push({
+                    main: entry.veggi_main,
+                    side: entry.veggi_side || ''
+                });
             }
         });
 
-        // Send to the AI service
+        // Create a structured request with menu type
+        const requestData = {
+            menuItems: menuItems,
+            menuType: 'weekly' // Specify that this is a weekly menu
+        };
+
+        console.log('Sending request data:', requestData);
+
+        // Send to the AI service with the structured data
         const aiResponse = await fetch('/ai-request', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ prompt: promptText })
+            body: JSON.stringify(requestData)
         });
+
+        // Check for non-JSON responses
+        const contentType = aiResponse.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const errorText = await aiResponse.text();
+            console.error('Non-JSON response received:', errorText);
+            throw new Error('Server returned non-JSON response. You might need to log in again or check server logs.');
+        }
 
         const aiData = await aiResponse.json();
         if (aiData.error) {
@@ -315,7 +325,7 @@ async function sendAiTranslateRequest() {
             return;
         }
 
-        // Parse the AI response
+        // Process the result as before
         let cleanedText = aiData.result
             .trim()
             .replace(/\n/g, '');
@@ -689,6 +699,8 @@ async function displayEnglishTranslations() {
         // Sort the data by day index to ensure correct order
         germanData.sort((a, b) => a.day_index - b.day_index);
         
+        console.log("German data loaded:", germanData.length, "entries");
+        
         // Create array of original dishes for reference
         const originalDishes = [];
         germanData.forEach(entry => {
@@ -708,17 +720,21 @@ async function displayEnglishTranslations() {
                 });
             }
         });
+        
+        console.log("Original dishes:", originalDishes.length);
 
         // Now fetch English translations
         const englishResponse = await fetch(`/load-week-en?week=${encodeURIComponent(week)}`);
         const englishData = await englishResponse.json();
+        
+        console.log("English data loaded:", englishData.length, "entries");
 
-        // Create formatted data for display
+        // Create formatted data for display - IMPORTANT: clear the array first
         const formattedTranslations = [];
         
-        // Always create translation objects for each German dish, even if no English data exists
+        // Create translation objects for each German dish
         germanData.forEach(entry => {
-            // Find matching English entry by date (may be undefined)
+            // Find matching English entry by date
             const englishEntry = englishData.find(en => en.date === entry.date);
             
             // Add meat dish translation (empty strings if no match)
@@ -738,11 +754,12 @@ async function displayEnglishTranslations() {
             }
         });
 
+        console.log("Formatted translations:", formattedTranslations.length);
+        
         // Format as JSON string for the existing displayTranslation function
-        // This will always contain objects for each dish, even with empty fields
         const translationText = JSON.stringify(formattedTranslations);
         
-        // Use a custom title for the modal to indicate these are from the database
+        // Pass the data to displayTranslation with the original dishes for reference
         displayTranslation(translationText, originalDishes);
         
     } catch (error) {
