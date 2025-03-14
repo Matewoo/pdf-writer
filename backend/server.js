@@ -639,6 +639,38 @@ app.get('/load-day-daily', (req, res) => {
     }
 });
 
+app.get('/load-day-menu-en', (req, res) => {
+    const { date } = req.query;
+
+    try {
+        const entry = db.prepare('SELECT * FROM menu_entries_en WHERE date = ?').get(date);
+        if (entry) {
+            res.json(entry);
+        } else {
+            res.status(404).json({ error: 'No English menu entry found for the given date' });
+        }
+    } catch (error) {
+        console.error('Error loading English menu:', error);
+        res.status(500).json({ error: 'Fehler beim Laden des englischen Menüs' });
+    }
+});
+
+app.get('/load-day-daily-en', (req, res) => {
+    const { date } = req.query;
+
+    try {
+        const entry = db.prepare('SELECT * FROM daily_entries_en WHERE date = ?').get(date);
+        if (entry) {
+            res.json(entry);
+        } else {
+            res.status(404).json({ error: 'No English daily entry found for the given date' });
+        }
+    } catch (error) {
+        console.error('Error loading English daily:', error);
+        res.status(500).json({ error: 'Fehler beim Laden des englischen Tagesgerichts' });
+    }
+});
+
 
 server.listen(4000, () => {
     console.log('Server is listening on port 4000');
