@@ -132,7 +132,7 @@ function startLanguageToggle() {
         clearInterval(window.languageToggleInterval);
     }
     
-    // Toggle language every 7 seconds
+    // Toggle language every 10 seconds
     window.languageToggleInterval = setInterval(() => {
         const nextLanguage = window.currentLanguage === 'de' ? 'en' : 'de';
         displayLanguage(nextLanguage);
