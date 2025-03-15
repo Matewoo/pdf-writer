@@ -75,6 +75,17 @@ db.exec(`
 `);
 
 db.exec(`
+    CREATE TABLE IF NOT EXISTS menu_entries_en (
+        date TEXT PRIMARY KEY,
+        week TEXT,
+        meat_main TEXT,
+        meat_side TEXT,
+        veggi_main TEXT,
+        veggi_side TEXT
+    )
+`);
+
+db.exec(`
     CREATE TABLE IF NOT EXISTS daily_entries (
         date TEXT PRIMARY KEY,
         week TEXT,
@@ -89,6 +100,17 @@ db.exec(`
         soup_halal BOOLEAN,
         soup_veggi BOOLEAN,
         soup_price TEXT
+    )
+`);
+
+db.exec(`
+    CREATE TABLE IF NOT EXISTS daily_entries_en (
+        date TEXT PRIMARY KEY,
+        week TEXT,
+        day_index INTEGER,
+        daily_main TEXT,
+        daily_side TEXT,
+        daily_soup TEXT
     )
 `);
 
@@ -308,6 +330,36 @@ app.post('/save-week', requireLogin, (req, res) => {
     }
 });
 
+app.post('/save-week-en', requireLogin, (req, res) => {
+    const { week, entries } = req.body;
+
+    const insert = db.prepare(`
+        INSERT OR REPLACE INTO menu_entries_en (date, week, meat_main, meat_side, veggi_main, veggi_side)
+        VALUES (?, ?, ?, ?, ?, ?)
+    `);
+
+    const transaction = db.transaction((entries) => {
+        for (const entry of entries) {
+            insert.run(
+                entry.date,
+                week,
+                entry.meatMain,
+                entry.meatSide,
+                entry.veggiMain,
+                entry.veggiSide,
+            );
+        }
+    });
+
+    try {
+        transaction(entries);
+        res.json({ message: 'Woche erfolgreich gespeichert' });
+    } catch (error) {
+        console.error('Error saving week:', error);
+        res.status(500).json({ error: 'Fehler beim Speichern der Woche' });
+    }
+});
+
 app.post('/save-week-daily', requireLogin, (req, res) => {
     const { week, entries } = req.body;
 
@@ -332,6 +384,36 @@ app.post('/save-week-daily', requireLogin, (req, res) => {
                 entry.soupHalal,
                 entry.soupVeggi,
                 entry.soupPrice
+            );
+        }
+    });
+
+    try {
+        transaction(entries);
+        res.json({ message: 'Woche erfolgreich gespeichert' });
+    } catch (error) {
+        console.error('Error saving week:', error);
+        res.status(500).json({ error: 'Fehler beim Speichern der Woche' });
+    }
+});
+
+app.post('/save-week-daily-en', requireLogin, (req, res) => {
+    const { week, entries } = req.body;
+
+    const insert = db.prepare(`
+        INSERT OR REPLACE INTO daily_entries_en (date, week, day_index, daily_main, daily_side, daily_soup)
+        VALUES (?, ?, ?, ?, ?, ?)
+    `);
+
+    const transaction = db.transaction((entries) => {
+        for (const entry of entries) {
+            insert.run(
+                entry.date,
+                entry.week,
+                entry.dayIndex,
+                entry.dailyMain,
+                entry.dailySide,
+                entry.dailySoup
             );
         }
     });
@@ -393,24 +475,86 @@ app.post('/generate-pdf', requireLogin, (req, res) => {
     }
 });
 
+// Route for AI translation requests
 app.post('/ai-request', requireAdmin, async (req, res) => {
     try {
-        const { prompt } = req.body;
+        // Extract parameters from request body
+        const { prompt, systemPrompt, menuItems, menuType } = req.body;
         
-        const completion = await openai.chat.completions.create({
+        console.log('\n==== AI REQUEST DEBUG INFO ====');
+        console.log('Request Body:', JSON.stringify(req.body, null, 2));
+        console.log('Menu Type:', menuType);
+        
+        // Define specialized prompts for different menu types
+        const specializedPrompts = {
+            weekly: `Du bist ein professioneller Übersetzer. Übersetze den folgenden Speiseplan ins Englische. Begriffe in Anführungszeichen sind Fachbegriffe oder Eigennamen und dürfen NICHT übersetzt werden. Falls ein Begriff nicht übersetzt wird, bleibt er im Output in Anführungszeichen. Die Übersetzung soll natürlich klingen: Hauptgericht und Beilage sollen mit Worten verbunden sein (Also zb statt Zeile1: Turkey schnitzel with pepper sauce, Zeile2: spaghetti; Sollst Du schreiben Zeile1: Turkey schnitzel with pepper sauce, Zeile2: served with spaghetti), aber dennoch in ZWEI getrennten Zeilen stehen. Gib das Ergebnis in folgendem Format zurück. Alles bitte in eine Zeile, ohne Leerzeichen zwischen den Json Parametern: [{'main_course':'<Hauptgericht in natürlicher Formulierung>','side_dish':'<Beilage in natürlicher Formulierung>'},{'main_course':'<Hauptgericht in natürlicher Formulierung>','side_dish':'<Beilage in natürlicher Formulierung>'}]`,
+            
+            daily: `Du bist ein professioneller Übersetzer. Übersetze den folgenden Tagesgerichte-Plan ins Englische. Begriffe in Anführungszeichen sind Fachbegriffe oder Eigennamen und dürfen NICHT übersetzt werden. Falls ein Begriff nicht übersetzt wird, bleibt er im Output in Anführungszeichen. Die Übersetzung soll natürlich klingen: Hauptgericht und Beilage sollen mit Worten verbunden sein, und die Suppe soll separat übersetzt werden. Tagesgerichte und Suppen sollen in getrennten Einträgen stehen. Beispiel für ein Tagesgericht: Main: "Turkey schnitzel with pepper sauce", Side: "served with spaghetti", und für eine Suppe: Main: "Tomato soup with basil", Side: "". Gib das Ergebnis in folgendem Format zurück. Alles bitte in eine Zeile, ohne Leerzeichen zwischen den Json Parametern: [{'main_course':'<Hauptgericht in natürlicher Formulierung>','side_dish':'<Beilage in natürlicher Formulierung>'},{'main_course':'<Suppe in natürlicher Formulierung>','side_dish':''}]`
+        };
+        
+        // Construct messages array based on available parameters
+        const messages = [];
+        
+        // Choose the appropriate system prompt based on menuType
+        let effectiveSystemPrompt = systemPrompt;
+        if (menuType && specializedPrompts[menuType]) {
+            effectiveSystemPrompt = specializedPrompts[menuType];
+            console.log('Using specialized prompt for:', menuType);
+        }
+        
+        // Add system message if provided
+        if (effectiveSystemPrompt) {
+            messages.push({ role: "system", content: effectiveSystemPrompt });
+            console.log('System prompt used:', effectiveSystemPrompt);
+            
+            // If using structured menu items
+            if (menuItems && Array.isArray(menuItems)) {
+                let userPrompt = "";
+                
+                menuItems.forEach(item => {
+                    userPrompt += `- ${item.main}`;
+                    if (item.side) {
+                        userPrompt += ` ${item.side}`;
+                    }
+                    userPrompt += "\n";
+                });
+                
+                messages.push({ role: "user", content: userPrompt });
+                console.log('User prompt constructed from menu items:', userPrompt);
+            }
+        } 
+        // Fall back to simple prompt if no structured data
+        else if (prompt) {
+            messages.push({ role: "user", content: prompt });
+            console.log('Direct prompt used:', prompt);
+        } else {
+            throw new Error("No prompt provided");
+        }
+        
+        console.log('Complete message array sent to OpenAI:', JSON.stringify(messages, null, 2));
+        
+        // Prepare request for OpenAI
+        const requestOptions = {
             model: "gpt-4o-mini",
-            messages: [
-                { role: "system", content: "Du bist ein professioneller Übersetzer. Übersetze den folgenden Speiseplan ins Englische. Begriffe in Anführungszeichen sind Fachbegriffe oder Eigennamen und dürfen NICHT übersetzt werden. Falls ein Begriff nicht übersetzt wird, bleibt er im Output in Anführungszeichen. Die Übersetzung soll natürlich klingen: Hauptgericht und Beilage sollen mit worten verbunden sein (Also zb statt Zeile1: Turkey schnitzel with pepper sauce, Zeile2: spaghetti; Sollst Du schreiben Zeile1: Turkey schnitzel with pepper sauce, Zeile2: served with spaghetti), aber dennoch in ZWEI getrennten Zeilen stehen. Gib das Ergebnis in folgendem Format zurück. Alles bitte in eine Zeile, ohne Leerzeichen zwischen den Json Parametern: [{'main_course':'<Hauptgericht in natürlicher Formulierung>','side_dish':'<Beilage in natürlicher Formulierung>'},{'main_course':'<Hauptgericht in natürlicher Formulierung>','side_dish':'<Beilage in natürlicher Formulierung>'}]" },
-                { role: "user", content: prompt }
-            ]
-        });
-
+            messages: messages
+        };
+        console.log('OpenAI request options:', JSON.stringify(requestOptions, null, 2));
+        
+        // Send request to OpenAI
+        const completion = await openai.chat.completions.create(requestOptions);
+        
+        console.log('\n==== AI RESPONSE DEBUG INFO ====');
+        console.log('Complete OpenAI response:', JSON.stringify(completion, null, 2));
+        
         const messageContent = completion.choices[0].message.content;
-
+        console.log('Extracted message content:', messageContent);
+        console.log('============================\n');
+        
         res.json({ result: messageContent });
     } catch (error) {
         console.error('OpenAI API error:', error);
-        res.status(500).json({ error: 'Error processing AI request' });
+        console.log('Error details:', error.response?.data || error.message);
+        res.status(500).json({ error: 'Error processing AI request: ' + error.message });
     }
 });
 
@@ -427,6 +571,18 @@ app.get('/load-week', (req, res) => {
     }
 });
 
+app.get('/load-week-en', (req, res) => {
+    const { week } = req.query;
+
+    try {
+        const entries = db.prepare('SELECT * FROM menu_entries_en WHERE week = ?').all(week);
+        res.json(entries);
+    } catch (error) {
+        console.error('Error loading week:', error);
+        res.status(500).json({ error: 'Fehler beim Laden der Woche' });
+    }
+});
+
 app.get('/load-week-daily', (req, res) => {
     const { week } = req.query;
 
@@ -436,6 +592,18 @@ app.get('/load-week-daily', (req, res) => {
     } catch (error) {
         console.error('Error loading week:', error);
         res.status(500).json({ error: 'Fehler beim Laden der Woche' });
+    }
+});
+
+app.get('/load-week-daily-en', (req, res) => {
+    const { week } = req.query;
+
+    try {
+        const entries = db.prepare('SELECT * FROM daily_entries_en WHERE week = ?').all(week);
+        res.json(entries);
+    } catch (error) {
+        console.error('Error loading daily English translations:', error);
+        res.status(500).json({ error: 'Fehler beim Laden der englischen Tagesgerichte' });
     }
 });
 
