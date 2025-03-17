@@ -28,8 +28,64 @@ function formatDayContent(menuData, dailyData, language, germanMenuData, germanD
     const isGerman = language === 'de';
     const title = isGerman ? 'Was gibt\'s heute?' : 'What\'s on today?';
     
-    // Always use the German date title
-    const dateTitle = germanMenuData?.date_title?.toUpperCase() || '';
+    // Get the German date title first
+    const germanDateTitle = germanMenuData?.date_title?.toUpperCase() || '';
+
+    // Convert to English format if needed
+    let dateTitle = germanDateTitle;
+    if (!isGerman && germanDateTitle) {
+        dateTitle = germanDateTitle
+            .replace('MONTAG', 'MONDAY')
+            .replace('DIENSTAG', 'TUESDAY')
+            .replace('MITTWOCH', 'WEDNESDAY')
+            .replace('DONNERSTAG', 'THURSDAY')
+            .replace('FREITAG', 'FRIDAY')
+            .replace('SAMSTAG', 'SATURDAY')
+            .replace('SONNTAG', 'SUNDAY')
+            .replace('JANUAR', 'JANUARY')
+            .replace('FEBRUAR', 'FEBRUARY')
+            .replace('MÄRZ', 'MARCH')
+            .replace('APRIL', 'APRIL')
+            .replace('MAI', 'MAY')
+            .replace('JUNI', 'JUNE')
+            .replace('JULI', 'JULY')
+            .replace('AUGUST', 'AUGUST')
+            .replace('SEPTEMBER', 'SEPTEMBER')
+            .replace('OKTOBER', 'OCTOBER')
+            .replace('NOVEMBER', 'NOVEMBER')
+            .replace('DEZEMBER', 'DECEMBER')
+            .replace('01.', '1st')
+            .replace('02.', '2nd')
+            .replace('03.', '3rd')
+            .replace('04.', '4th')
+            .replace('05.', '5th')
+            .replace('06.', '6th')
+            .replace('07.', '7th')
+            .replace('08.', '8th')
+            .replace('09.', '9th')
+            .replace('10.', '10th')
+            .replace('11.', '11th')
+            .replace('12.', '12th')
+            .replace('13.', '13th')
+            .replace('14.', '14th')
+            .replace('15.', '15th')
+            .replace('16.', '16th')
+            .replace('17.', '17th')
+            .replace('18.', '18th')
+            .replace('19.', '19th')
+            .replace('20.', '20th')
+            .replace('21.', '21st')
+            .replace('22.', '22nd')
+            .replace('23.', '23rd')
+            .replace('24.', '24th')
+            .replace('25.', '25th')
+            .replace('26.', '26th')
+            .replace('27.', '27th')
+            .replace('28.', '28th')
+            .replace('29.', '29th')
+            .replace('30.', '30th')
+            .replace('31.', '31st');
+    }
     
     // Default data with consistent German price format for both languages
     const defaultData = {
