@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speiseplan Generator - Home</title>
+    <meta name="google" content="notranslate">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .home-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .home-container h1 {
+            color: #a81411;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .nav-cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .nav-card {
+            background-color: #f8f8f8;
+            border-radius: 8px;
+            padding: 20px;
+            width: 200px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            color: #333;
+        }
+        
+        .nav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .nav-card h3 {
+            color: #a81411;
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        .nav-card p {
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+        
+        .telc-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .telc-logo img {
+            max-width: 150px;
+        }
+        
+        .user-section {
+            color: black;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-only {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="src/roleBasedUI.js"></script>
+    <div class="home-container">
+        <div class="telc-logo">
+            <img src="/resources/img/telc-logo.png" alt="telc Logo" onerror="this.style.display='none'">
+        </div>
+        <h1>Speiseplan Generator</h1>
+        
+        <div class="nav-cards">
+            <a href="/edit/menu" class="nav-card">
+                <h3>Wochenspeiseplan</h3>
+                <p>Erstellen und bearbeiten Sie den wöchentlichen Speiseplan</p>
+            </a>
+            
+            <a href="/edit/dailyDish" class="nav-card">
+                <h3>Tagesgericht</h3>
+                <p>Verwalten Sie die täglichen Spezialangebote</p>
+            </a>
+            
+            <a href="/digitalSignage/dailyFeed" class="nav-card" target="_blank">
+                <h3>Tagesanzeige</h3>
+                <p>Öffnen Sie die Anzeige für das heutige Menü</p>
+            </a>
+            
+            <a href="/digitalSignage/tabletFeed" class="nav-card" target="_blank">
+                <h3>Tablet Anzeige</h3>
+                <p>Optimierte Anzeige mit Sprachenwechsel</p>
+            </a>
+            
+            <a href="/digitalSignage/weeklyFeed" class="nav-card" target="_blank">
+                <h3>Wochenanzeige</h3>
+                <p>Zeigen Sie den kompletten Wochenplan an</p>
+            </a>
+            
+            <a href="#" class="nav-card admin-only" onclick="openUserManagement(); return false;">
+                <h3>Benutzerverwaltung</h3>
+                <p>Verwalten Sie Benutzer und Zugriffsrechte</p>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function openUserManagement() {
+            alert('Benutzerverwaltung ist noch nicht implementiert');
+        }
+    </script>
+</body>
+
+</html>
