@@ -114,6 +114,14 @@ db.exec(`
     )
 `);
 
+app.get('/', (req, res) => {
+    res.redirect('/home');
+});
+
+app.get('/home', requireLogin, (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/public', 'home.html'));
+});
+
 // LDAP-Authentifizierung Route
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -436,7 +444,7 @@ app.post('/generate-pdf', requireLogin, (req, res) => {
     try {
         if (type === 'week' && trans === '') {
             console.log('Generating PDF for week:', val);
-            pdfPath = `python3 scripts/writeWeeklyMenuDE.py ${val}`;
+            pdfPath = `python.exe .\\scripts\\writeWeeklyMenuDE.py ${val}`;
         } else if (type === 'week' && trans !== '') {
             console.log('Generating EN PDF for week:', val);
             
@@ -445,7 +453,7 @@ app.post('/generate-pdf', requireLogin, (req, res) => {
             fs.writeFileSync(tempJsonPath, JSON.stringify(trans, null, 2), 'utf8');
             
             // Call Python script without passing the translations as command line argument
-            pdfPath = `python3 scripts/writeWeeklyMenuEN.py ${val}`;
+            pdfPath = `python.exe .\\scripts\\writeWeeklyMenuEN.py ${val}`;
         } else if (type === 'day') {
             console.log('Generating PDF for daily:', val);
             pdfPath = `python3 scripts/writeDailyMenu.py ${val}`;
