@@ -701,35 +701,33 @@ function displayTranslation(translationText, originalDishes = []) {
         saveBtn.style.borderRadius = '4px';
         saveBtn.style.cursor = 'pointer';
         saveBtn.onclick = async () => {
-            // Get all translated texts from form fields using the same logic as the PDF button
+            // Get all translated texts from form fields
             const updatedTranslations = [];
-            const inputs = form.querySelectorAll('input:not([type="hidden"])');
-            const hiddenInputs = form.querySelectorAll('input[type="hidden"]');
-            let hiddenIndex = 0;
+            const dishContainers = form.querySelectorAll('.dish-container');
             
-            for (let i = 0; i < inputs.length; i++) {
-                const mainCourse = inputs[i].value;
-                let sideDish = '';
+            // Process each dish container separately
+            dishContainers.forEach(container => {
+                const inputs = container.querySelectorAll('input');
+                const hasHiddenInput = container.querySelector('input[type="hidden"]') !== null;
                 
-                // If this is a soup (has hidden input), use empty side dish
-                if (hiddenInputs[hiddenIndex] && 
-                    hiddenInputs[hiddenIndex].parentNode === inputs[i].parentNode) {
-                    sideDish = '';
-                    hiddenIndex++;
-                    i++; // Skip the next input which would be the hidden one
-                } else {
-                    // Otherwise get the next input as side dish
-                    i++;
-                    if (i < inputs.length) {
-                        sideDish = inputs[i].value;
-                    }
+                // This is a soup item (with hidden input)
+                if (hasHiddenInput) {
+                    const mainCourse = inputs[0].value; // First input is main course (soup)
+                    updatedTranslations.push({
+                        main_course: mainCourse,
+                        side_dish: ''  // Soups have no side dish
+                    });
+                } 
+                // This is a regular dish
+                else {
+                    const mainCourse = inputs[0].value;
+                    const sideDish = inputs[1].value;
+                    updatedTranslations.push({
+                        main_course: mainCourse,
+                        side_dish: sideDish
+                    });
                 }
-                
-                updatedTranslations.push({
-                    main_course: mainCourse,
-                    side_dish: sideDish
-                });
-            }
+            });
             
             // Save the translations to the database
             const saveResult = await saveTranslationsToDatabase(updatedTranslations, originalDishes);
