@@ -444,7 +444,7 @@ app.post('/generate-pdf', requireLogin, (req, res) => {
     try {
         if (type === 'week' && trans === '') {
             console.log('Generating PDF for week:', val);
-            pdfPath = `python.exe .\\scripts\\writeWeeklyMenuDE.py ${val}`;
+            pdfPath = `python3 scripts/writeWeeklyMenuDE.py ${val}`;
         } else if (type === 'week' && trans !== '') {
             console.log('Generating EN PDF for week:', val);
             
@@ -453,7 +453,7 @@ app.post('/generate-pdf', requireLogin, (req, res) => {
             fs.writeFileSync(tempJsonPath, JSON.stringify(trans, null, 2), 'utf8');
             
             // Call Python script without passing the translations as command line argument
-            pdfPath = `python.exe .\\scripts\\writeWeeklyMenuEN.py ${val}`;
+            pdfPath = `python3 scripts/writeWeeklyMenuEN.py ${val}`;
         } else if (type === 'day') {
             console.log('Generating PDF for daily:', val);
             pdfPath = `python3 scripts/writeDailyMenu.py ${val}`;
