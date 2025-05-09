@@ -484,7 +484,7 @@ app.post('/generate-pdf', requireLogin, (req, res) => {
 });
 
 // Route for AI translation requests
-app.post('/ai-request', requireAdmin, async (req, res) => {
+app.post('/ai-request', requireLogin, async (req, res) => {
     try {
         // Extract parameters from request body
         const { prompt, systemPrompt, menuItems, menuType } = req.body;
