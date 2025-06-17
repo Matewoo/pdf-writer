@@ -203,7 +203,7 @@ function loadWeekData(week) {
 
                 // Automatically fill dailyPrice if empty
                 if (!dailyPriceInput.value) {
-                    dailyPriceInput.value = "6,00 € / 4,20 €";
+                    dailyPriceInput.value = "Business Lunch 6,00 € / 4,20 €";
                 }
                 if (!soupPriceInput.value) {
                     soupPriceInput.value = "Großer Teller 4,00 € / Kleiner Teller 2,00 €";
@@ -229,7 +229,7 @@ function loadWeekData(week) {
                     }
 
                     if (!dailyPriceInput.value) {
-                        dailyPriceInput.value = "6,00 € / 4,20 €";
+                        dailyPriceInput.value = "Business Lunch 6,00 € / 4,20 €";
                     }
                     if (!soupPriceInput.value) {
                         soupPriceInput.value = "Großer Teller 4,00 € / Kleiner Teller 2,00 €";
