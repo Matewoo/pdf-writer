@@ -31,7 +31,7 @@ function loadDay(day) {
                     veggi: '„veggi“'
                 },
                 daily: {
-                    category: 'Tagesempfehlung',
+                    category: 'Gut von gestern',
                     main: dailyData.daily_main || defaultData.dailyMain,
                     side: dailyData.daily_side || defaultData.dailySide,
                     price: dailyData.daily_price || defaultData.dailyPrice,

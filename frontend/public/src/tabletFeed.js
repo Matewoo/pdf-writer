@@ -101,6 +101,7 @@ function formatDayContent(menuData, dailyData, language, germanMenuData, germanD
         if (isGerman) return text;
         
         return text
+            .replace('Kleine Portion', 'Small portion')
             .replace('Großer Teller', 'Large plate')
             .replace('Kleiner Teller', 'Small plate')
             .replace('Mittlerer Teller', 'Medium plate');
@@ -122,7 +123,7 @@ function formatDayContent(menuData, dailyData, language, germanMenuData, germanD
             veggi: '„veggi"'
         },
         daily: {
-            category: isGerman ? 'Tagesempfehlung' : 'Daily Special',
+            category: isGerman ? 'Gut von gestern' : 'Yesterday\'s Best',
             main: dailyData?.daily_main || defaultData.dailyMain,
             side: dailyData?.daily_side || defaultData.dailySide,
             price: germanDailyData?.daily_price || defaultData.dailyPrice,  // Always use German price

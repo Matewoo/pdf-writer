@@ -180,12 +180,12 @@ function loadWeekData(week) {
 
                 // Automatically fill meatPrice if empty
                 if (!meatPriceInput.value) {
-                    meatPriceInput.value = (dayIndex === 4) ? "9,50 € / 6,80 € - Business Lunch 7,50 € / 5,10 €" : "9,00 € / 6,30 € - Business Lunch 7,00 € / 4,90 €";
+                    meatPriceInput.value = (dayIndex === 4) ? "9,50 € / 6,80 € - Kleine Portion 7,50 € / 5,10 €" : "9,00 € / 6,30 € - Kleine Portion 7,00 € / 4,90 €";
                 }
 
                 // Automatically fill veggiPrice if empty
                 if (!veggiPriceInput.value) {
-                    veggiPriceInput.value = "8,50 € / 5,95 € - Business Lunch 6,50 € / 4,55 €";
+                    veggiPriceInput.value = "8,50 € / 5,95 € - Kleine Portion 6,50 € / 4,55 €";
                 }
             });
 
@@ -209,11 +209,11 @@ function loadWeekData(week) {
                     }
 
                     if (!meatPriceInput.value) {
-                        meatPriceInput.value = (i === 4) ? "9,50 € / 6,80 € - Business Lunch 7,50 € / 5,10 €" : "9,00 € / 6,30 € - Business Lunch 7,00 € / 4,90 €";
+                        meatPriceInput.value = (i === 4) ? "9,50 € / 6,80 € - Kleine Portion 7,50 € / 5,10 €" : "9,00 € / 6,30 € - Kleine Portion 7,00 € / 4,90 €";
                     }
 
                     if (!veggiPriceInput.value) {
-                        veggiPriceInput.value = "8,50 € / 5,95 € - Business Lunch 6,50 € / 4,55 €";
+                        veggiPriceInput.value = "8,50 € / 5,95 € - Kleine Portion 6,50 € / 4,55 €";
                     }
                 }
             }
