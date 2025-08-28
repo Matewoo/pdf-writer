@@ -136,13 +136,13 @@ for _, row in df.iterrows():
     x, y = positions["Meat price"]
     c.setFont("FiraSansItalic", 10)
     c.setFillColor(schwarz)
-    c.drawString(x, y, row["meat_price"])
+    c.drawString(x, y, row["meat_price"].replace("Kleine", "Small"))
 
     # Veggi Preis kursiv/schwarz
     x, y = positions["Veggi price"]
     c.setFont("FiraSansItalic", 10)
     c.setFillColor(schwarz)
-    c.drawString(x, y, row["veggi_price"])
+    c.drawString(x, y, row["veggi_price"].replace("Kleine", "Small"))
 
     if row["halal"]:
         x, y = positions["Halal"]
