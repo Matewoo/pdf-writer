@@ -41,7 +41,7 @@ function loadDay(day) {
                     category: 'Tagessuppe',
                     main: dailyData.daily_soup || defaultData.dailySoup,
                     side: '',
-                    price: dailyData.daily_soup_price || defaultData.dailySoupPrice,
+                    price: dailyData.soup_price || defaultData.dailySoupPrice,
                     special: dailyData.soup_halal ? '„HALAL“' : (dailyData.soup_veggi ? '„veggi“' : '')
                 }
             };
