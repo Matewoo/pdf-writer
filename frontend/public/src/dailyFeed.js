@@ -66,7 +66,7 @@ function loadDay(day) {
 
             <p class="main">Salatbuffet</p>
             <p class="side">mit verschiedenen Dressings</p>
-            <p class="price">Großer Teller 4,50 € / Kleiner Teller 2,50 €</p>
+            <p class="price">Großer Teller ab 4,50 € / Kleiner Teller ab 2,50 €</p>
         `;
         })
         .catch(error => {
