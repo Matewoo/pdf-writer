@@ -159,7 +159,7 @@ function formatDayContent(menuData, dailyData, language, germanMenuData, germanD
 
         <p class="main">${isGerman ? 'Salatbuffet' : 'Salad Buffet'}</p>
         <p class="side">${isGerman ? 'mit verschiedenen Dressings' : 'with various dressings'}</p>
-        <p class="price">${translatePriceText('Großer Teller 4,50 € / Kleiner Teller 2,50 €', isGerman)}</p>
+        <p class="price">${translatePriceText('Großer Teller ab 4,50 € / Kleiner Teller ab 2,50 €', isGerman)}</p>
         
         <div class="language-indicator">${language.toUpperCase()}</div>
     `;
