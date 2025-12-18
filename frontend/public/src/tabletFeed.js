@@ -104,7 +104,8 @@ function formatDayContent(menuData, dailyData, language, germanMenuData, germanD
             .replace('Kleine Portion', 'Small portion')
             .replace('Großer Teller', 'Large plate')
             .replace('Kleiner Teller', 'Small plate')
-            .replace('Mittlerer Teller', 'Medium plate');
+            .replace('Mittlerer Teller', 'Medium plate')
+            .replace('ab', 'from');
     }
 
     const categories = {
